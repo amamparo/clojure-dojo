@@ -1,0 +1,39 @@
+(ns katas.kata-07-game-of-life)
+
+;; ─── Kata 7: Conway's Game of Life ─────────────────────────────────────
+;;
+;; You are learning: representing a sparse 2-D world as a set of
+;; coordinates (so the grid is implicitly infinite), set operations,
+;; `frequencies`, and `mapcat`.
+;;
+;; Represent a generation as a SET of `[x y]` integer pairs — exactly
+;; the coordinates of the alive cells. Dead cells are everything else.
+;;
+;; A neighbour of `[x y]` is one of the eight cells whose coordinates
+;; differ by ±1 (and is not the cell itself).
+;;
+;; Rules, applied simultaneously to produce the next generation:
+;;
+;;   - A live cell with 2 or 3 live neighbours survives.
+;;   - A dead cell with exactly 3 live neighbours is born.
+;;   - All other cells are dead next generation.
+;;
+;; `step` advances the world by one generation.
+;;
+;;   (step #{}) => #{}
+;;
+;;   ;; A blinker oscillates between horizontal and vertical:
+;;   (step #{[0 0] [1 0] [2 0]})  => #{[1 -1] [1 0] [1 1]}
+;;   (step #{[1 -1] [1 0] [1 1]}) => #{[0 0] [1 0] [2 0]}
+;;
+;;   ;; A 2×2 block is a still life:
+;;   (step #{[0 0] [1 0] [0 1] [1 1]})
+;;     => #{[0 0] [1 0] [0 1] [1 1]}
+;;
+;; Hint: tally each candidate cell's live-neighbour count using
+;; `frequencies` over `(mapcat neighbours alive)`, then keep cells that
+;; satisfy the survival or birth rule.
+
+(defn step [alive]
+  ;; TODO
+  )
