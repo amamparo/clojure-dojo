@@ -14,6 +14,7 @@ A personal practice space for Clojure katas.
 just              # list recipes
 just test         # run all tests
 just test-kata 1  # run a single kata's tests
+just review 1     # have Claude review a kata's solution (requires `claude` CLI)
 just repl         # REPL with test deps loaded
 just fmt          # format with cljfmt
 just fmt-check    # check formatting only
