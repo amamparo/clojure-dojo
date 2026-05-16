@@ -1,6 +1,6 @@
 (ns katas.kata-05-primes)
 
-;; ─── Kata 5: Lazy primes ───────────────────────────────────────────────
+;; ─── Kata 5: Lazy primes ──────────────────────────────────────────────
 ;;
 ;; `prime?`: predicate on a non-negative integer.
 ;;
@@ -16,8 +16,6 @@
 ;;   (nth primes 24)    => 97        ; the 25th prime, 0-indexed
 ;;
 ;; Constraint: `primes` MUST be lazy. Do not bake in an upper bound.
-;; Trial division against the primes already produced is fine and
-;; idiomatic — try writing it with `lazy-seq` and a recursive helper.
 
 (defn prime? [n]
   ;; TODO

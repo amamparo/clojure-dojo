@@ -178,7 +178,11 @@ Anonymous functions — two forms:
 #(* % %)             ; shorthand; %, %1, %2 for args
 ```
 
-Don't use `#(…)` for multi-form bodies; use `fn`. Don't wrap a function in `#()` if the function alone works — `(filter even? xs)` not `(filter #(even? %) xs)`.
+Three rules, in order:
+
+1. Prefer the bare function when it works — `(filter even? xs)`, not `(filter #(even? %) xs)`.
+2. Reach for `#(…)` for short single-form bodies that actually do something — `#(* % %)`.
+3. Reach for `fn` for anything multi-form, or where naming the parameter helps the reader.
 
 Functions are values: pass them, return them, store them. This will feel like the anonymous functions you've used before, but used vastly more. The standard library is built around higher-order functions; you'll use them constantly.
 
@@ -319,7 +323,21 @@ Use `clojure.string/...` for string ops, not host interop, unless interop is cle
 
 Custom comparators: a 2-arg fn returning negative/zero/positive, or a 2-arg predicate (`<`, `>`).
 
-For "rank by count desc, ties alphabetical asc" you want `(sort-by (juxt #(- (val %)) key) m)` or similar — chew on that before reading on.
+**Multi-key sorts.** `juxt` packs N key functions into one that returns a vector, and Clojure compares vectors element-wise — so `(sort-by (juxt :last :first) users)` sorts by last name, breaking ties by first name. The same shape works on any data with more than one sort key.
+
+**Mixed directions.** Comparators don't support per-key direction natively, but you can negate a numeric key to flip its order:
+
+```clojure
+(sort-by (juxt #(- (:score %)) :name) results)
+;; score descending, name ascending
+```
+
+**Map entries** are key/value pairs you can destructure or call `key`/`val` on:
+
+```clojure
+(sort-by val (frequencies "hello"))   ; sort entries by their count
+(sort-by key (frequencies "hello"))   ; sort entries by their letter
+```
 
 
 
@@ -373,7 +391,7 @@ The pattern: pick a *canonical form* (a key function), let `group-by` bucket thi
 
 You've been using lazy seqs (everything `map`/`filter`/`range` produces). Now you'll *build* one.
 
-`lazy-seq` wraps a body so it's not evaluated until something pulls on it. The classic recursive lazy-seq pattern:
+`lazy-seq` wraps a body so it's not evaluated until something pulls on it. The simplest recursive shape:
 
 ```clojure
 (defn naturals-from [n]
@@ -383,6 +401,18 @@ You've been using lazy seqs (everything `map`/`filter`/`range` produces). Now yo
 ```
 
 That recursion never blows the stack because `lazy-seq` defers the recursive call until needed. Each element materialises on demand.
+
+A more interesting case is when each step needs the *previous* values. Fibonacci passes its state along as function arguments:
+
+```clojure
+(defn fibs
+  ([] (fibs 0 1))
+  ([a b] (lazy-seq (cons a (fibs b (+ a b))))))
+
+(take 8 (fibs))  ; => (0 1 1 2 3 5 8 13)
+```
+
+The state — whatever the recursion needs to produce the next element — rides along as args. This pattern generalises: pass an index, an accumulator, a predicate, a previous result, whatever the next step requires.
 
 A `def` can hold a lazy seq directly — handy for "the seq of all X":
 
@@ -421,8 +451,6 @@ Set operations live in `clojure.set`:
 (set/difference #{1 2 3} #{2})   ; => #{1 3}
 ```
 
-The Game of Life encoding: *the set of live cells is the world*. The grid is implicitly infinite. To advance, generate every cell that could possibly change (the alive cells + their neighbours), tally each one's live-neighbour count with `frequencies` over `(mapcat neighbours alive)`, and keep the ones that survive or are born.
-
 
 
 > ## Complete kata 6 ("Game of Life") before continuing
@@ -454,25 +482,34 @@ For most problems, prefer `reduce` or a higher-order function over hand-rolled `
 
 ## 17. Recursion — state machines
 
-Some loops aren't a fold: the next move depends on what was just consumed — a *state machine*. Bowling is the classic; the rules look at a variable amount of "lookahead" depending on what happened in the current frame. The shape:
+Some loops aren't a fold: the next move depends on what was just consumed — a *state machine*. The defining property is **variable lookahead** — depending on what you see, you consume one item, or two, or three.
+
+Example. You're walking a stream of commands. Most commands stand alone, but `:goto` takes the *next* item in the stream as its argument:
 
 ```clojure
-(defn score [rolls]
-  (loop [rolls rolls
-         frame 1
-         total 0]
-    (cond
-      (> frame 10) total
-      ;; strike: take next-two as bonus, advance one roll, next frame
-      ;; spare:  take next-one as bonus, advance two rolls, next frame
-      ;; open:   sum two rolls, advance two rolls, next frame
-      )))
+(defn run-commands [cmds]
+  (loop [cmds cmds
+         pos 0
+         path [0]]
+    (let [[c & rest] cmds]
+      (cond
+        (nil? c)        path
+        (= c :forward)  (recur rest (inc pos) (conj path (inc pos)))
+        (= c :back)     (recur rest (dec pos) (conj path (dec pos)))
+        (= c :goto)     (let [[target & rest2] rest]
+                          (recur rest2 target (conj path target)))))))
+
+(run-commands [:forward :forward :back :goto 10 :back])
+;; => [0 1 2 1 10 9]
 ```
 
-The key habits:
-- Destructure the head of `rolls` with `(let [[a b c & _] rolls] ...)`.
-- Don't try to mutate; `recur` with new values.
-- Frame counter as an explicit loop variable.
+Three things to notice:
+
+- **Variable consumption.** Most branches `recur` with `rest` — one item consumed. The `:goto` branch destructures one more value off the front and `recur`s with `rest2` — two items consumed. A `reduce` over `cmds` can't express that.
+- **State as loop bindings.** `pos` and `path` ride along explicitly; nothing mutates.
+- **Termination on empty.** `(nil? c)` catches the end of the stream and returns the accumulator.
+
+The same shape shows up whenever the parsing rule depends on the current token — escape sequences in strings, opcodes with immediate operands, scoring systems where some events grant lookahead.
 
 
 
@@ -497,11 +534,11 @@ Until now everything has been pure; real systems hold state. Clojure separates t
 `swap!` is *retried* under contention — the function you pass can run more than once. That's why it must be pure: no I/O, no side effects, no `reset!`-after-`deref`. Read+update happens *inside* the swap function, atomically.
 
 ```clojure
-;; WRONG — race condition
-(reset! account (- @account amount))
+;; WRONG — read and write are separate steps
+(reset! cache (assoc @cache user-id user-data))
 
-;; RIGHT
-(swap! account update :balance - amount)
+;; RIGHT — the read+update happens atomically inside swap!
+(swap! cache assoc user-id user-data)
 ```
 
 **Structured errors with `ex-info`:**
@@ -531,26 +568,37 @@ You almost never define a custom exception class in Clojure. `ex-info` carries a
 Before reaching for the heavy polymorphism tools, notice that a map of functions is often all you need:
 
 ```clojure
-(def ops
-  {'+ +, '- -, '* *, '/ /})
+(def conversions
+  {:c->f  #(+ 32 (* % 9/5))
+   :f->c  #(* (- % 32) 5/9)
+   :m->ft #(* % 3.28084)
+   :ft->m #(/ % 3.28084)})
 
-(defn apply-op [stack op]
-  (let [f (ops op)
-        [b a & rest] stack]
-    (cons (f a b) rest)))
+((conversions :c->f) 100)   ; => 212.0
 ```
 
-That's a dispatch table. It composes with `reduce`:
+That's a dispatch table — a map whose values are the functions that handle each case. To wire it into something larger, look up and call:
 
 ```clojure
-(reduce step initial-stack tokens)
+(defn convert [conv-key value]
+  (if-let [f (conversions conv-key)]
+    (f value)
+    (throw (ex-info "Unknown conversion" {:key conv-key}))))
 ```
 
-For RPN, your token handler distinguishes "this is a number → push" from "this is an op → pop, apply, push." Strings vs symbols are normalised by going through `symbol`:
+It composes naturally with `reduce` when you want to thread a value through a sequence of operations chosen at runtime:
 
 ```clojure
-(symbol "+")  ; => +
-(symbol '+)   ; => +
+(reduce (fn [v k] ((conversions k) v))
+        0
+        [:c->f :f->c :c->f])
+```
+
+When the inputs are strings but your dispatch table uses symbols (or vice versa), normalise with `symbol` or `name`:
+
+```clojure
+(symbol "+")    ; => +
+(name '+)       ; => "+"
 ```
 
 
@@ -639,6 +687,18 @@ Inspect what a macro expands to with `macroexpand-1`:
 
 The `v#` becomes a unique symbol like `v__1234__auto__`. You'd never accidentally collide with a user's `v`.
 
+**Recursive expansion.** Macros can call themselves; each recursion happens at compile time, leaving a flat nested form. A real `and` takes any number of arguments:
+
+```clojure
+(defmacro my-and
+  ([] true)
+  ([x] x)
+  ([x & more]
+   `(if ~x (my-and ~@more) ~x)))
+```
+
+When a macro takes a *structured* input — a bindings vector, a pair-list, a nested form — you destructure that input the same way you'd destructure data, and recurse on the rest. The mechanism is identical; only the shape of the input differs.
+
 **When to write a macro.** Not often. If a function works, use a function — macros don't compose, can't be `apply`d, and obscure stack traces. Write a macro when you need to control *evaluation* (don't evaluate the second arg unless...) or *binding* (introduce a name visible in the body).
 
 
@@ -652,27 +712,14 @@ The `v#` becomes a unique symbol like `v__1234__auto__`. You'd never accidentall
 By the time you sit down with Kata 13, you have everything. A tree-walking interpreter for a Lisp-y language is a perfect closer because:
 
 - Source code is already a Clojure data structure — no parser needed.
-- Self-evaluating values are obvious — numbers, strings, keywords, etc. return themselves.
-- Symbol lookup is a map lookup (`env`).
-- Composite forms dispatch on the first element — exactly the multimethod-or-cond pattern you've seen.
-- `let`'s sequential bindings, `do`'s sequence-of-expressions, `if`'s conditional — each is a few lines of recursive `evaluate`.
+- Self-evaluating values are obvious — numbers, strings, keywords return themselves.
+- Symbol lookup is a map lookup.
+- Composite forms dispatch on their first element — the pattern you've seen with `cond`, multimethods, and dispatch tables.
+- The special forms you need (`if`, `let`, `do`, `def`, `fn`) are each a few lines of recursive evaluation.
 
-The shape:
+One thing worth stating up front, because it's a definition not a hint: in `let`, bindings extend the environment that the body sees. Each binding is visible to every subsequent binding *and* to the body. The shadow doesn't leak — the extended env exists only inside the `let` form.
 
-```clojure
-(defn evaluate [env expr]
-  (cond
-    (symbol? expr)  (lookup env expr)
-    (seq? expr)     (evaluate-list env expr)   ; cond on (first expr)
-    :else           expr))                      ; self-eval
-```
-
-The lessons from every prior kata show up:
-- `cond` for dispatch (§4)
-- destructuring of forms (§5)
-- `reduce` over args (§7)
-- `ex-info` for unbound symbols / unknown forms (§18)
-- sequential `let` is a left fold over bindings (§16, §18)
+Everything else falls out of the techniques from the prior katas. Trust them.
 
 
 
