@@ -563,6 +563,14 @@ You almost never define a custom exception class in Clojure. `ex-info` carries a
 
 
 
+You now have a fold (`reduce`), state in a map, and structured errors (`ex-info`). One more kata before §19 introduces a new idea — a small synthesis of the three.
+
+
+
+> ## Complete kata 10 ("assignments") before continuing
+
+
+
 ## 19. Dispatch — maps of functions
 
 Before reaching for the heavy polymorphism tools, notice that a map of functions is often all you need:
@@ -603,7 +611,7 @@ When the inputs are strings but your dispatch table uses symbols (or vice versa)
 
 
 
-> ## Complete kata 10 ("RPN") before continuing
+> ## Complete kata 11 ("RPN") before continuing
 
 
 
@@ -647,7 +655,7 @@ A `defrecord` generates a `->Circle` positional constructor and a `map->Circle` 
 
 
 
-> ## Complete kata 11 ("shapes") before continuing
+> ## Complete kata 12 ("shapes") before continuing
 
 
 
@@ -703,13 +711,13 @@ When a macro takes a *structured* input — a bindings vector, a pair-list, a ne
 
 
 
-> ## Complete kata 12 ("when-let*") before continuing
+> ## Complete kata 13 ("when-let*") before continuing
 
 
 
 ## 22. The capstone — writing an interpreter
 
-By the time you sit down with Kata 13, you have everything. A tree-walking interpreter for a Lisp-y language is a perfect closer because:
+By the time you sit down with Kata 14, you have everything. A tree-walking interpreter for a Lisp-y language is a perfect closer because:
 
 - Source code is already a Clojure data structure — no parser needed.
 - Self-evaluating values are obvious — numbers, strings, keywords return themselves.
@@ -723,7 +731,7 @@ Everything else falls out of the techniques from the prior katas. Trust them.
 
 
 
-> ## Complete kata 13 ("the interpreter") before continuing
+> ## Complete kata 14 ("the interpreter") before continuing
 
 
 
