@@ -1,6 +1,6 @@
-(ns katas.kata-06-primes-test
+(ns katas.kata-05-primes-test
   (:require [clojure.test :refer [deftest is testing]]
-            [katas.kata-06-primes :refer [prime? primes]]))
+            [katas.kata-05-primes :refer [prime? primes]]))
 
 (deftest prime?-edge-cases
   (is (false? (prime? 0)))

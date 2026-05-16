@@ -1,6 +1,6 @@
-(ns katas.kata-07-game-of-life)
+(ns katas.kata-06-game-of-life)
 
-;; ─── Kata 7: Conway's Game of Life ─────────────────────────────────────
+;; ─── Kata 6: Conway's Game of Life ─────────────────────────────────────
 ;;
 ;; You are learning: representing a sparse 2-D world as a set of
 ;; coordinates (so the grid is implicitly infinite), set operations,

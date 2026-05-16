@@ -1,6 +1,6 @@
-(ns katas.kata-03-word-frequencies)
+(ns katas.kata-02-word-frequencies)
 
-;; ─── Kata 3: Word frequencies ──────────────────────────────────────────
+;; ─── Kata 2: Word frequencies ──────────────────────────────────────────
 ;;
 ;; You are learning: maps as data, `reduce` (and meeting `frequencies`),
 ;; sorting with custom comparators, and normalising input.

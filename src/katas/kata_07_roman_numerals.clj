@@ -1,6 +1,6 @@
-(ns katas.kata-02-roman-numerals)
+(ns katas.kata-07-roman-numerals)
 
-;; ─── Kata 2: Roman numerals ────────────────────────────────────────────
+;; ─── Kata 7: Roman numerals ────────────────────────────────────────────
 ;;
 ;; You are learning: lookup tables, `reduce`, threading, recursion, and
 ;; round-trip thinking — writing two functions that should be inverses.

@@ -1,6 +1,6 @@
-(ns katas.kata-02-roman-numerals-test
+(ns katas.kata-07-roman-numerals-test
   (:require [clojure.test :refer [deftest is testing]]
-            [katas.kata-02-roman-numerals :refer [int->roman roman->int]]))
+            [katas.kata-07-roman-numerals :refer [int->roman roman->int]]))
 
 (def cases
   [[1    "I"]

@@ -1,6 +1,6 @@
-(ns katas.kata-07-game-of-life-test
+(ns katas.kata-06-game-of-life-test
   (:require [clojure.test :refer [deftest is testing]]
-            [katas.kata-07-game-of-life :refer [step]]))
+            [katas.kata-06-game-of-life :refer [step]]))
 
 (deftest empty-world
   (is (= #{} (step #{}))))

@@ -1,6 +1,6 @@
-(ns katas.kata-05-run-length-encoding-test
+(ns katas.kata-04-run-length-encoding-test
   (:require [clojure.test :refer [deftest is testing]]
-            [katas.kata-05-run-length-encoding :refer [encode decode]]))
+            [katas.kata-04-run-length-encoding :refer [encode decode]]))
 
 (deftest encode-empty
   (is (= [] (encode "")))

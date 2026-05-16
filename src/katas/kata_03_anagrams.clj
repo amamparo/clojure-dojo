@@ -1,7 +1,7 @@
-(ns katas.kata-04-anagrams
+(ns katas.kata-03-anagrams
   (:require [clojure.string :as str]))
 
-;; ─── Kata 4: Anagrams ──────────────────────────────────────────────────
+;; ─── Kata 3: Anagrams ──────────────────────────────────────────────────
 ;;
 ;; You are learning: `group-by`, choosing a canonical form as a map key,
 ;; preserving insertion order with sequences over maps, and case

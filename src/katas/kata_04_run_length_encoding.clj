@@ -1,6 +1,6 @@
-(ns katas.kata-05-run-length-encoding)
+(ns katas.kata-04-run-length-encoding)
 
-;; ─── Kata 5: Run-length encoding ───────────────────────────────────────
+;; ─── Kata 4: Run-length encoding ───────────────────────────────────────
 ;;
 ;; You are learning: `partition-by`, `mapcat`, `repeat`, the seq
 ;; abstraction (one implementation that works on strings, vectors, and

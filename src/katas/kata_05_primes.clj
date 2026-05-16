@@ -1,6 +1,6 @@
-(ns katas.kata-06-primes)
+(ns katas.kata-05-primes)
 
-;; ─── Kata 6: Lazy primes ───────────────────────────────────────────────
+;; ─── Kata 5: Lazy primes ───────────────────────────────────────────────
 ;;
 ;; You are learning: `lazy-seq`, infinite sequences, the difference
 ;; between a function that returns a seq and a `def` that holds one,

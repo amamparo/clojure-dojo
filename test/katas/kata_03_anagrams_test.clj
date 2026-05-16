@@ -1,6 +1,6 @@
-(ns katas.kata-04-anagrams-test
+(ns katas.kata-03-anagrams-test
   (:require [clojure.test :refer [deftest is testing]]
-            [katas.kata-04-anagrams :refer [anagrams? group-anagrams]]))
+            [katas.kata-03-anagrams :refer [anagrams? group-anagrams]]))
 
 (deftest anagrams?-true-cases
   (is (anagrams? "listen" "silent"))

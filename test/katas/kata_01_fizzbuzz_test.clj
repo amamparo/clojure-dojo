@@ -22,7 +22,7 @@
 
 (deftest divisibility-rules
   (let [out (fizzbuzz 100)
-        at  #(nth out (dec %))]
+        at #(nth out (dec %))]
     (testing "every multiple of 15 is FizzBuzz"
       (doseq [i (range 15 101 15)]
         (is (= "FizzBuzz" (at i)) (str "i=" i))))

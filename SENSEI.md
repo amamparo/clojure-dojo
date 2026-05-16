@@ -1,11 +1,5 @@
 # Clojure for Java/Python Engineers — A Kata-Aligned Guide
 
-A fast ramp into Clojure, ordered so each section unlocks the next kata in this repo. Written assuming you're fluent in Python and Java but new to functional programming.
-
-The guide is meant to be skimmed top-to-bottom once, then revisited per-section as you sit down with each kata. At each checkpoint, stop reading and go write code.
-
----
-
 ## 0. Mental model
 
 Three ideas to internalise up front. Everything else is mechanical.
@@ -246,28 +240,7 @@ Rule of thumb: data-shaped operations (`assoc`, `update`, Java method calls) go 
 
 ---
 
-## 8. Recursion: `loop`/`recur`
-
-The JVM doesn't optimise tail calls automatically. Clojure exposes them via the explicit `recur` form, which jumps back to an enclosing `loop` or function with new bindings:
-
-```clojure
-(defn factorial [n]
-  (loop [n n
-         acc 1]
-    (if (zero? n)
-      acc
-      (recur (dec n) (* acc n)))))
-```
-
-`recur` must be in tail position; the compiler will error if it isn't. This is intentional — you'd get a stack overflow otherwise.
-
-For most problems, prefer `reduce` or a higher-order function over hand-rolled `loop`/`recur`. Reach for `loop` when you genuinely have an accumulator that doesn't fit a fold.
-
-> **By this point, you've learned enough to complete Kata 2 (Roman numerals).** You'll want a lookup table (a vector of `[value symbol]` pairs in descending order), a `loop`/`recur` or `reduce`, and the inverse going the other way. Round-trip via your tests.
-
----
-
-## 9. Working with maps
+## 8. Working with maps
 
 Maps are the workhorse data structure. Learn these by heart:
 
@@ -306,6 +279,23 @@ Maps are the workhorse data structure. Learn these by heart:
 
 ---
 
+## 9. Namespaces and `clojure.string`
+
+A namespace is a unit of code. The first form in every file declares it and any imports:
+
+```clojure
+(ns katas.kata-03-anagrams
+  (:require [clojure.string :as str]))
+```
+
+You then call `str/lower-case`, `str/split`, etc. The conventional aliases are worth memorising: `str`, `set`, `io`, `json`, `time`. Mismatched aliases across a codebase is a small but real friction.
+
+`:require :refer [foo bar]` pulls specific names in directly. Use it sparingly — explicit aliasing tells the reader where a function comes from.
+
+Use `clojure.string/...` for string ops, not Java methods, unless interop is more idiomatic for what you're doing. E.g. `str/lower-case` over `.toLowerCase`.
+
+---
+
 ## 10. Sorting
 
 ```clojure
@@ -319,28 +309,11 @@ Custom comparators: a 2-arg fn returning negative/zero/positive, or a 2-arg pred
 
 For "rank by count desc, ties alphabetical asc" you want `(sort-by (juxt #(- (val %)) key) m)` or similar — chew on that before reading on.
 
-> **By this point, you've learned enough to complete Kata 3 (word frequencies).** `clojure.string/split` on whitespace, lower-case each word, trim punctuation with a regex or character set, count with `frequencies`, then `sort-by` for `top-n`.
+> **By this point, you've learned enough to complete Kata 2 (word frequencies).** `clojure.string/split` on whitespace, lower-case each word, trim punctuation with a regex or character set, count with `frequencies`, then `sort-by` for `top-n`.
 
 ---
 
-## 11. Namespaces and `clojure.string`
-
-A namespace is a unit of code. The first form in every file declares it and any imports:
-
-```clojure
-(ns katas.kata-04-anagrams
-  (:require [clojure.string :as str]))
-```
-
-You then call `str/lower-case`, `str/split`, etc. The conventional aliases (table in STYLEGUIDE.md) are worth memorising: `str`, `set`, `io`, `json`, `time`. Mismatched aliases across a codebase is a small but real friction.
-
-`:require :refer [foo bar]` pulls specific names in directly. Use it sparingly — explicit aliasing tells the reader where a function comes from.
-
-Use `clojure.string/...` for string ops, not Java methods, unless interop is more idiomatic for what you're doing. E.g. `str/lower-case` over `.toLowerCase`.
-
----
-
-## 12. `group-by`
+## 11. `group-by`
 
 ```clojure
 (group-by odd? [1 2 3 4 5])
@@ -352,11 +325,11 @@ Use `clojure.string/...` for string ops, not Java methods, unless interop is mor
 
 The pattern: pick a *canonical form* (a key function), let `group-by` bucket things, then post-process. For anagrams, the canonical form of a word is its sorted lowercased letters.
 
-> **By this point, you've learned enough to complete Kata 4 (anagrams).** Two strings are anagrams iff their canonical forms are equal. `group-anagrams` is `(vals (group-by canonical-form strings))` — but you'll want to think about preserving insertion order (hint: `group-by` already uses an array-map for small inputs, but don't rely on that — see what your tests demand).
+> **By this point, you've learned enough to complete Kata 3 (anagrams).** Two strings are anagrams iff their canonical forms are equal. `group-anagrams` is `(vals (group-by canonical-form strings))` — but you'll want to think about preserving insertion order (hint: `group-by` already uses an array-map for small inputs, but don't rely on that — see what your tests demand).
 
 ---
 
-## 13. More sequence operations
+## 12. More sequence operations
 
 ```clojure
 (partition 3 [1 2 3 4 5 6])         ; => ((1 2 3) (4 5 6))
@@ -374,11 +347,11 @@ The pattern: pick a *canonical form* (a key function), let `group-by` bucket thi
 
 `partition-by` splits a seq into runs of "equal under f" — run-length encoding falls out of it directly.
 
-> **By this point, you've learned enough to complete Kata 5 (RLE).** `partition-by identity` then `(map (juxt count first) ...)`. Decode is `mapcat` of `repeat`. The trick is making both work seamlessly on strings, vectors, and lazy seqs — that's the seq abstraction earning its keep.
+> **By this point, you've learned enough to complete Kata 4 (RLE).** `partition-by identity` then `(map (juxt count first) ...)`. Decode is `mapcat` of `repeat`. The trick is making both work seamlessly on strings, vectors, and lazy seqs — that's the seq abstraction earning its keep.
 
 ---
 
-## 14. Laziness in earnest
+## 13. Laziness in earnest
 
 You've been using lazy seqs (everything `map`/`filter`/`range` produces). Now you'll *build* one.
 
@@ -404,11 +377,11 @@ Two caveats with lazy seqs:
 1. Side effects inside laziness happen *when realised*, not when defined. Don't rely on ordering or "did it run."
 2. Holding the head of a long lazy seq while walking it can pin the whole thing in memory ("head retention"). Usually not a problem; just be aware.
 
-> **By this point, you've learned enough to complete Kata 6 (primes).** Trial division with a `prime?` predicate, then `(def primes (filter prime? (iterate inc 2)))` is a one-liner that works but is O(n√n) per prime. A faster idiomatic version uses `lazy-seq` with a recursive helper that tests candidates against the primes already produced — closer to what the kata description hints at. Write the simple version first, then the lazy-recursive one.
+> **By this point, you've learned enough to complete Kata 5 (primes).** Trial division with a `prime?` predicate, then `(def primes (filter prime? (iterate inc 2)))` is a one-liner that works but is O(n√n) per prime. A faster idiomatic version uses `lazy-seq` with a recursive helper that tests candidates against the primes already produced — closer to what the kata description hints at. Write the simple version first, then the lazy-recursive one.
 
 ---
 
-## 15. Sets — both predicate and data
+## 14. Sets — both predicate and data
 
 Sets as predicates (the most underrated idiom):
 
@@ -430,13 +403,30 @@ Set operations live in `clojure.set`:
 
 The Game of Life encoding — *the set of live cells is the world* — is a small revelation. The grid is implicitly infinite. To advance, generate every cell that could possibly change (the alive cells + their neighbours), tally each one's live-neighbour count with `frequencies` over `(mapcat neighbours alive)`, and keep the ones that survive or are born.
 
-> **By this point, you've learned enough to complete Kata 7 (Game of Life).** Spend a minute on paper before coding. Two helpers (`neighbours` of a coordinate, and `step` of a world) are all you need.
+> **By this point, you've learned enough to complete Kata 6 (Game of Life).** Spend a minute on paper before coding. Two helpers (`neighbours` of a coordinate, and `step` of a world) are all you need.
 
 ---
 
-## 16. Recursion patterns: state machines as `loop`/`recur`
+## 15. Recursion — `loop`/`recur` and state machines
 
-Some problems don't fit a fold cleanly — bowling is the classic. The rules look at variable amounts of "lookahead" depending on what happened in the current frame. The shape is:
+The JVM doesn't optimise tail calls automatically. Clojure exposes them via the explicit `recur` form, which jumps back to an enclosing `loop` or function with new bindings:
+
+```clojure
+(defn factorial [n]
+  (loop [n n
+         acc 1]
+    (if (zero? n)
+      acc
+      (recur (dec n) (* acc n)))))
+```
+
+`recur` must be in tail position; the compiler will error if it isn't. This is intentional — you'd get a stack overflow otherwise.
+
+For most problems, prefer `reduce` or a higher-order function over hand-rolled `loop`/`recur`. Reach for `loop` when you genuinely have an accumulator that doesn't fit a fold.
+
+> **By this point, you've learned enough to complete Kata 7 (Roman numerals).** You'll want a lookup table (a vector of `[value symbol]` pairs in descending order), a `loop`/`recur` or `reduce`, and the inverse going the other way. Round-trip via your tests.
+
+That covers the gentle case. The step up is a loop whose next move depends on what it just consumed — a *state machine*. Some problems don't fit a fold cleanly; bowling is the classic. The rules look at variable amounts of "lookahead" depending on what happened in the current frame. The shape is:
 
 ```clojure
 (defn score [rolls]
@@ -460,7 +450,7 @@ The key habits:
 
 ---
 
-## 17. Identity vs value — atoms, `ex-info`
+## 16. Identity vs value — atoms, `ex-info`
 
 So far, everything has been pure. Real systems have state. Clojure's answer: a *value* is immutable, but an *identity* — a thing that holds different values over time — is explicit.
 
@@ -504,7 +494,7 @@ You almost never define a custom exception class in Clojure. `ex-info` carries a
 
 ---
 
-## 18. Dispatch — maps of functions
+## 17. Dispatch — maps of functions
 
 Before reaching for the heavy polymorphism tools, notice that a map of functions is often all you need:
 
@@ -535,7 +525,7 @@ For RPN, your token handler distinguishes "this is a number → push" from "this
 
 ---
 
-## 19. Real polymorphism — protocols, records, multimethods
+## 18. Real polymorphism — protocols, records, multimethods
 
 Two complementary tools. Both are open in different axes.
 
@@ -577,7 +567,7 @@ A `defrecord` generates a `->Circle` positional constructor and a `map->Circle` 
 
 ---
 
-## 20. Macros — code as data, finally cashed in
+## 19. Macros — code as data, finally cashed in
 
 A macro is a function that runs at *compile time* and returns a form to be compiled in its place. Because Clojure source is just nested lists, that "form" is a regular Clojure data structure you build with regular Clojure code.
 
@@ -619,7 +609,7 @@ The `v#` becomes a unique symbol like `v__1234__auto__`. You'd never accidentall
 
 ---
 
-## 21. The capstone — writing an interpreter
+## 20. The capstone — writing an interpreter
 
 By the time you sit down with Kata 13, you have everything. A tree-walking interpreter for a Lisp-y language is a perfect closer because:
 
@@ -643,8 +633,8 @@ The lessons from every prior kata show up:
 - `cond` for dispatch (§3)
 - destructuring of forms (§4)
 - `reduce` over args (§6)
-- `ex-info` for unbound symbols / unknown forms (§17)
-- sequential `let` is a left fold over bindings (§8, §17)
+- `ex-info` for unbound symbols / unknown forms (§16)
+- sequential `let` is a left fold over bindings (§15, §16)
 
 > **By this point, you've learned enough to complete Kata 13 (interpreter).** This is the one where it all clicks. Write it; you'll know Clojure when you're done.
 
@@ -652,7 +642,7 @@ The lessons from every prior kata show up:
 
 ## Going further
 
-- **STYLEGUIDE.md** in this repo is the compressed community style guide. Re-read after every 2–3 katas; you'll notice things you didn't before.
+- **[Community Clojure Style Guide](https://github.com/bbatsov/clojure-style-guide)** — skim it, then re-read after every 2–3 katas; you'll notice things you didn't before.
 - **clojure.core** has ~600 functions. You don't need all of them, but skimming the [cheatsheet](https://clojure.org/api/cheatsheet) once is a high-ROI hour.
 - **REPL-driven development**: get a REPL connected to your editor (CIDER for Emacs, Calva for VS Code, Cursive for IntelliJ). Send forms to the REPL as you write — don't reload files. This is the workflow that makes Clojure productive.
 - **Joy of Clojure** (Fogus & Houser) or **Programming Clojure** (Halloway & Bedra) when you want a book. Skip "Clojure for the Brave and True" — fun, but you're past its level.
