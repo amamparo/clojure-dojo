@@ -13,7 +13,7 @@ A personal practice space for Clojure katas.
 ```sh
 just              # list recipes
 just test         # run all tests
-just test-kata 1  # run a single kata's tests
+just test 1       # run one kata's tests (append a deftest name for just one)
 just review 1     # have Claude review a kata's solution (requires `claude` CLI)
 just repl         # REPL with test deps loaded
 just fmt          # format with cljfmt
@@ -24,7 +24,7 @@ just lint         # clj-kondo
 Or directly with the Clojure CLI:
 
 ```sh
-clj -M:test                  # run all tests
+clj -M:test:kaocha           # run all tests
 clj -A:test                  # REPL with test deps
 clj -T:cljfmt fix            # format
 ```
