@@ -22,6 +22,8 @@ The REPL is also where you look things up — `(doc f)`, `(source f)`, `(apropos
 
 This is the Clojure workflow, not a nicety. If it is new to you, getting fluent in it is as much the point of this repo as the katas.
 
+And: for this repo, the REPL also replaces the LLM in your other tab. You solve the katas yourself — `(doc f)` and `(source f)` are the references. An AI that writes the solution and explains it afterward short-circuits the point. Fluency comes from typing, not from reading what someone else typed.
+
 
 
 ## 2. Syntax — the whole language in 5 minutes

@@ -30,4 +30,6 @@
   (run 1)                   run all of kata 1's tests
   (run 1 \"first-fifteen\")   run one test by name
 
-Loop: solve a kata in src/katas, re-evaluate it, (run <n>) until green.")
+Loop: edit a kata in src/katas, reload it (your editor's load-file, or
+`(require 'katas.kata-NN-slug :reload)` at the bare REPL), (run <n>)
+until green.")
