@@ -2,17 +2,25 @@
 default:
     @just --list
 
-# Run all tests
-test:
-    clj -M:test
+# Run tests: `just test` (all), `just test 1` (kata 1), `just test 1 empty-input` (one test)
+test N='' TEST='':
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ -z "{{N}}" ]; then
+        clj -M:test:kaocha
+    else
+        slug=$(ls src/katas | sed -n "s/^kata_$(printf '%02d' {{N}})_\(.*\)\.clj$/\1/p" | tr '_' '-')
+        ns="katas.kata-$(printf '%02d' {{N}})-${slug}-test"
+        if [ -z "{{TEST}}" ]; then
+            clj -M:test:kaocha --focus "$ns"
+        else
+            clj -M:test:kaocha --focus "$ns/{{TEST}}"
+        fi
+    fi
 
 # Start a REPL with test deps loaded
 repl:
     clj -A:test
-
-# Run tests for a specific kata, e.g. `just test-kata 1`
-test-kata N:
-    clj -M:test -n katas.kata-$(printf '%02d' {{N}})-$(ls src/katas | sed -n "s/^kata_$(printf '%02d' {{N}})_\(.*\)\.clj$/\1/p" | tr '_' '-')-test
 
 # Review kata N's solution with Claude, e.g. `just review 1` (prints to stdout)
 review N:
