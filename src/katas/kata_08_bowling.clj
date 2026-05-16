@@ -2,9 +2,6 @@
 
 ;; ─── Kata 8: Bowling scorer ────────────────────────────────────────────
 ;;
-;; You are learning: recursion with explicit accumulators, destructuring,
-;; turning rules into a small state machine.
-;;
 ;; `score` takes a flat vector of rolls (each 0..10) for a complete game
 ;; and returns the integer total.
 ;;

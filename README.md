@@ -1,48 +1,22 @@
 # clojure-dojo
 
-Clojure, by hand.
+Clojure katas with a guide, for a programmer new to Clojure — and to
+functional programming itself. The katas are `;; TODO` stubs in
+`src/katas`; their tests are already written, and red until you make
+them pass.
 
-## The guide
+Start with [SENSEI.md](SENSEI.md): it teaches the language and tells you
+which kata to solve, and when.
 
-[SENSEI.md](SENSEI.md). Thirteen katas, in order. No clock. No streak.
+You need:
 
-Written for engineers who think in Python or Java and want, for a while, to
-think in something else. Read a little. Stop. Write.
+- a JDK — [Adoptium Temurin install guide](https://adoptium.net/installation/)
+- the [Clojure CLI](https://clojure.org/guides/install_clojure)
 
-## The katas
-
-Each kata is a stub with a failing test. The red is the question; you write
-the answer. The test going green is a quiet yes — nothing to chase.
-
-Nothing here needs the internet. The REPL is the manual (`doc`, `source`,
-`apropos`); the tests are the answer.
-
-## Requirements
-
-- [Clojure CLI](https://clojure.org/guides/install_clojure) (uses `deps.edn`)
-- [IntelliJ IDEA](https://www.jetbrains.com/idea/) with the
-  [Cursive](https://cursive-ide.com/) plugin — the dev + test environment
-
-## Setup
-
-Open the project in IntelliJ, then right-click `deps.edn` →
-**Add as deps.edn project** and enable the **`:test`** alias in the Clojure
-Deps tool window. Without this the module classpath is empty and test runs
-fail with `ClassNotFoundException: clojure.main`.
-
-## Common tasks
-
-Inside Cursive:
-
-- **Run all tests:** Run tests in project (or run a `…_test` namespace).
-- **Run one kata:** run its `…_test` namespace.
-- **Run a single test:** put the caret in the `deftest` → Run test under caret.
-- **REPL:** jack in via Cursive, or from a terminal:
+With those installed, start a REPL from the project directory:
 
 ```sh
-clj -A:test     # REPL with the test path on the classpath
+clj -A:test
 ```
 
-## Style
-
-Follow the [Community Clojure Style Guide](https://github.com/bbatsov/clojure-style-guide).
+From there the REPL says what to run, and SENSEI says where to go next.

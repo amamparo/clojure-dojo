@@ -2,10 +2,6 @@
 
 ;; ─── Kata 12: when-let* ────────────────────────────────────────────────
 ;;
-;; You are learning: macros, quoting, syntax-quote (`` ` ``), unquote
-;; (`~`), unquote-splicing (`~@`), `gensym`, hygienic macro patterns,
-;; and inspecting expansion with `macroexpand-1`.
-;;
 ;; `when-let*` is `clojure.core/when-let` extended to multiple bindings.
 ;; It evaluates each binding form in order. If any binding's value is
 ;; logical false (nil or false), the macro short-circuits and returns

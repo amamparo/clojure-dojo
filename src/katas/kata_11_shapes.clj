@@ -2,11 +2,6 @@
 
 ;; ─── Kata 11: Shapes ───────────────────────────────────────────────────
 ;;
-;; You are learning: polymorphism in Clojure with two complementary
-;; tools — `defprotocol` + `defrecord` (dispatch on the host type) and
-;; `defmulti` + `defmethod` (dispatch on an arbitrary function of the
-;; arguments). Doing the same domain twice makes the trade-off concrete.
-;;
 ;; ── Part A: protocol & records ────────────────────────────────────────
 ;;
 ;; The `Shape` protocol has two methods: `area` and `perimeter`.

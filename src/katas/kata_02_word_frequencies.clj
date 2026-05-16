@@ -2,9 +2,6 @@
 
 ;; ─── Kata 2: Word frequencies ──────────────────────────────────────────
 ;;
-;; You are learning: maps as data, `reduce` (and meeting `frequencies`),
-;; sorting with custom comparators, and normalising input.
-;;
 ;; A "word" is any non-empty token after:
 ;;   1. splitting on whitespace,
 ;;   2. lower-casing,

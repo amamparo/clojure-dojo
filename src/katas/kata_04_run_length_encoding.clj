@@ -2,10 +2,6 @@
 
 ;; ─── Kata 4: Run-length encoding ───────────────────────────────────────
 ;;
-;; You are learning: `partition-by`, `mapcat`, `repeat`, the seq
-;; abstraction (one implementation that works on strings, vectors, and
-;; lazy seqs), and pure functions on data.
-;;
 ;; Implement `encode` and `decode`. They work on any seqable input
 ;; whose elements support equality.
 ;;

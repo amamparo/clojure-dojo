@@ -2,9 +2,6 @@
 
 ;; ─── Kata 10: RPN calculator ───────────────────────────────────────────
 ;;
-;; You are learning: dispatch via maps of fns (or multimethods), `reduce`
-;; over a stack, and structured error reporting with `ex-info`.
-;;
 ;; `evaluate` takes a sequence of tokens. Each token is either:
 ;;   - a number (long or double), pushed onto the stack
 ;;   - an operator from this set, given as a symbol or string:

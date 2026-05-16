@@ -1,6 +1,6 @@
-{:paths ["src" "resources"]
- :deps  {org.clojure/clojure {:mvn/version "1.12.0"}}
+{:paths ["src" "resources" "dev"]
+ :deps  {org.clojure/clojure {:mvn/version "1.12.5"}}
  :aliases
- {;; Test path only. No :main-opts, so this alias is safe to enable
-  ;; for an editor REPL jack-in (e.g. Cursive).
-  :test {:extra-paths ["test"]}}}
+ {:test {:extra-paths ["test"]
+         :extra-deps {eftest/eftest {:mvn/version "0.6.0"}
+                      nubank/matcher-combinators {:mvn/version "3.10.0"}}}}}

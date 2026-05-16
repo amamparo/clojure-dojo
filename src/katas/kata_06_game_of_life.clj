@@ -2,10 +2,6 @@
 
 ;; ─── Kata 6: Conway's Game of Life ─────────────────────────────────────
 ;;
-;; You are learning: representing a sparse 2-D world as a set of
-;; coordinates (so the grid is implicitly infinite), set operations,
-;; `frequencies`, and `mapcat`.
-;;
 ;; Represent a generation as a SET of `[x y]` integer pairs — exactly
 ;; the coordinates of the alive cells. Dead cells are everything else.
 ;;

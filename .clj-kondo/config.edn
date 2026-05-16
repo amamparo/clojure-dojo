@@ -1,0 +1,3 @@
+{:config-in-ns
+ {user {:linters {:unused-private-var {:level :off}
+                  :clojure-lsp/unused-public-var {:level :off}}}}}

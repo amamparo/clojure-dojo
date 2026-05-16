@@ -1,33 +1,30 @@
-# SENSEI
-
-A path through Clojure. Thirteen forms. Walk it slowly.
-
-Begin when you are sitting down and the room is quiet.
-
-Nothing you need is online — only this file, a REPL, and the tests.
-
-The REPL is the manual. `(doc f)` — what it does. `(source f)` — how it was
-made. `(dir clojure.string)`, `(apropos "split")`, `(find-doc "count")` when
-a name escapes you.
-
-The tests are the answer. Run them; they say yes or no. Nothing to ask — not
-a search box, not a machine.
-
 ## 0. Mental model
 
-Three ideas. Sit with them. The rest is mechanical.
+Three ideas to absorb first; the rest is mechanical.
 
-**Code is data.** A Clojure program is a tree of lists, vectors, and maps. The compiler reads this tree and evaluates it. That's it. There's no separate "AST" — the source *is* the AST. This is why macros are tractable in Lisps: a macro is just a function from tree to tree.
+**Code is data.** A Clojure program is a tree of lists, vectors, and maps; the compiler reads and evaluates that tree. There is no separate AST — the source *is* the tree. Hence macros are tractable: a macro is a function from tree to tree.
 
-**Values are immutable.** A vector, map, or set, once constructed, cannot be changed. `assoc`, `conj`, etc. return *new* collections that structurally share most of their innards with the old one (this is cheap — O(log32 n) for the persistent data structures). Coming from Python/Java this feels suffocating at first; you'll find within a week that "I cannot accidentally mutate this" is a load off your mind.
+**Values are immutable.** A vector, map, or set, once constructed, cannot change. `assoc`, `conj`, etc. return *new* collections that structurally share most of their innards with the old (cheap — O(log32 n) for the persistent data structures). This feels limiting at first; within a week it has removed a whole class of bug.
 
-**Functions are the primary abstraction.** Where Java reaches for a class and Python reaches for an object, Clojure reaches for a function. State, when needed, is wrapped in explicit reference types (atoms, refs, agents) that you `deref` to get a value.
+**Functions are the abstraction.** Where other languages reach for a class, an object, or a loop, Clojure reaches for a function. State, when genuinely needed, lives in explicit reference types (atoms, refs, agents) you `deref` to read.
 
-You're on the JVM. Java interop is one character of syntax away. The REPL is your IDE — get one running before reading further.
+You're on a host with a deep library ecosystem; interop is one character of syntax away.
 
----
 
-## 1. Syntax — the whole language in 5 minutes
+
+## 1. REPL-driven development
+
+In most languages a REPL is an afterthought — a scratch console you rarely open. In Clojure it is first-class. It is *how you work*: you keep one running and build the program inside it.
+
+So: start a REPL, connect your editor to it, and leave it running. As you write code, send each form to it — a function, an expression to try that function, a test. It takes effect immediately in the running program, and you see the result at once. Change it, send it again. Definitions and state accumulate; you rarely restart or reload a whole file.
+
+The REPL is also where you look things up — `(doc f)`, `(source f)`, `(apropos "...")` — and where you keep throwaway experiments, in a `(comment ...)` block that is ignored on load.
+
+This is the Clojure workflow, not a nicety. If it is new to you, getting fluent in it is as much the point of this repo as the katas.
+
+
+
+## 2. Syntax — the whole language in 5 minutes
 
 Everything is a prefix-form expression in parentheses:
 
@@ -57,22 +54,22 @@ Note `[x]` — argument lists are *vectors*, not parenthesised. This is one of t
 - `#_form` skip the next form entirely — useful for "comment out this expression"
 - `(comment ...)` block of forms ignored when loaded; runnable in the REPL
 
-**Truthiness:** `nil` and `false` are falsy. Everything else is truthy — including `0`, `""`, and empty collections. This differs from Python and is one of the most common bug sources for newcomers.
+**Truthiness:** `nil` and `false` are falsy. Everything else is truthy — including `0`, `""`, and empty collections. This is one of the most common bug sources for newcomers.
 
----
 
-## 2. The built-in data types
+
+## 3. The built-in data types
 
 | Type | Literal | Notes |
 |---|---|---|
-| Long | `42` | Java `long` by default |
-| Double | `1.5` | Java `double` |
+| Long | `42` | 64-bit integer by default |
+| Double | `1.5` | double-precision float |
 | Ratio | `1/3` | exact rationals, just work |
 | BigInt | `42N` | arbitrary precision |
-| String | `"hi"` | Java strings |
-| Character | `\a` | Java `char` |
+| String | `"hi"` | native immutable strings |
+| Character | `\a` | a single character |
 | Boolean | `true`, `false` | |
-| Nil | `nil` | like Java `null` |
+| Nil | `nil` | absence of a value |
 | Keyword | `:foo`, `:user/name` | interned, == in O(1); used as map keys and "constants" |
 | Symbol | `'foo` | names that refer to vars; `'` quotes them |
 | Vector | `[1 2 3]` | indexed access, conj appends to end |
@@ -88,9 +85,9 @@ Note `[x]` — argument lists are *vectors*, not parenthesised. This is one of t
 
 That last trick — keyword-as-function — is everywhere in idiomatic Clojure. Memorise it.
 
----
 
-## 3. Control flow
+
+## 4. Control flow
 
 `if` is an *expression*, not a statement. It returns the chosen branch's value. There is no `return`; the last expression in any form is its value.
 
@@ -124,9 +121,9 @@ That last trick — keyword-as-function — is everywhere in idiomatic Clojure. 
   "none")  ; default (no key)
 ```
 
----
 
-## 4. `let` and destructuring
+
+## 5. `let` and destructuring
 
 `let` introduces local bindings. Bindings are sequential — each can see the previous:
 
@@ -156,9 +153,9 @@ Destructuring also works in function parameters, which is how you "name" map key
   (str "Hello, " name))
 ```
 
----
 
-## 5. Functions in depth
+
+## 6. Functions in depth
 
 Multi-arity (overloading by argument count):
 
@@ -183,11 +180,11 @@ Anonymous functions — two forms:
 
 Don't use `#(…)` for multi-form bodies; use `fn`. Don't wrap a function in `#()` if the function alone works — `(filter even? xs)` not `(filter #(even? %) xs)`.
 
-Functions are values: pass them, return them, store them. This will feel like Python lambdas, but used vastly more. The standard library is built around higher-order functions; you'll use them constantly.
+Functions are values: pass them, return them, store them. This will feel like the anonymous functions you've used before, but used vastly more. The standard library is built around higher-order functions; you'll use them constantly.
 
----
 
-## 6. Sequences — `map`, `filter`, `reduce`
+
+## 7. Sequences — `map`, `filter`, `reduce`
 
 The seq abstraction is Clojure's iterator protocol. Almost every collection can be viewed as a seq, and the core sequence functions work on all of them uniformly.
 
@@ -200,7 +197,7 @@ The seq abstraction is Clojure's iterator protocol. Almost every collection can 
 
 `range` produces a (lazy) seq of integers. `(range 5)` → `(0 1 2 3 4)`. `(range 1 6)` → `(1 2 3 4 5)`.
 
-`for` is a list comprehension, not a loop — same idea as Python's:
+`for` is a list comprehension, not a loop:
 
 ```clojure
 (for [i (range 5)
@@ -219,13 +216,13 @@ The seq abstraction is Clojure's iterator protocol. Almost every collection can 
 
 **Sequences are lazy by default.** `(map f xs)` returns a lazy seq; nothing is computed until something pulls on it. This is mostly invisible until you do I/O inside a `map`, at which point you'll be confused why nothing happened. Force with `doall`, or use `mapv` / `filterv` for eager vectors.
 
-> Enough for Kata 1 (FizzBuzz). `defn`, `cond`, `mod`, `map` over `range` — or a `for`. The whole form.
->
-> Close the guide. Begin.
 
----
 
-## 7. Threading macros
+> ## Complete kata 1 ("FizzBuzz") before continuing
+
+
+
+## 8. Threading macros
 
 Reading nested expressions inside-out is painful. The threading macros invert that.
 
@@ -249,21 +246,21 @@ Reading nested expressions inside-out is painful. The threading macros invert th
 ;; => (0 4 16 36 64)
 ```
 
-Rule of thumb: data-shaped operations (`assoc`, `update`, Java method calls) go in `->`; sequence operations go in `->>`. Most Clojure pipelines you'll write are `->>`.
+Rule of thumb: data-shaped operations (`assoc`, `update`, host method calls) go in `->`; sequence operations go in `->>`. Most Clojure pipelines you'll write are `->>`.
 
 `as->` lets you name the intermediate value when neither position fits.
 
----
 
-## 8. Working with maps
 
-Maps are the workhorse data structure. Learn these by heart:
+## 9. Working with maps
+
+Maps are the workhorse data structure. Learn these cold:
 
 ```clojure
 (get m :k)            ; lookup, nil if missing
 (get m :k :default)   ; with default
 (:k m)                ; same as (get m :k); idiomatic for keyword keys
-(m :k)                ; works too, but NPE if m is nil — avoid
+(m :k)                ; works too, but errors if m is nil — avoid
 
 (assoc m :k v)        ; new map with :k=v
 (assoc m :a 1 :b 2)   ; multiple at once
@@ -292,9 +289,9 @@ Maps are the workhorse data structure. Learn these by heart:
 (update m :count (fnil inc 0))
 ```
 
----
 
-## 9. Namespaces and `clojure.string`
+
+## 10. Namespaces and `clojure.string`
 
 A namespace is a unit of code. The first form in every file declares it and any imports:
 
@@ -307,11 +304,11 @@ You then call `str/lower-case`, `str/split`, etc. The conventional aliases are w
 
 `:require :refer [foo bar]` pulls specific names in directly. Use it sparingly — explicit aliasing tells the reader where a function comes from.
 
-Use `clojure.string/...` for string ops, not Java methods, unless interop is more idiomatic for what you're doing. E.g. `str/lower-case` over `.toLowerCase`.
+Use `clojure.string/...` for string ops, not host interop, unless interop is clearly more idiomatic. E.g. `str/lower-case` over `.toLowerCase`.
 
----
 
-## 10. Sorting
+
+## 11. Sorting
 
 ```clojure
 (sort [3 1 2])                       ; => (1 2 3)
@@ -324,13 +321,13 @@ Custom comparators: a 2-arg fn returning negative/zero/positive, or a 2-arg pred
 
 For "rank by count desc, ties alphabetical asc" you want `(sort-by (juxt #(- (val %)) key) m)` or similar — chew on that before reading on.
 
-> Enough for Kata 2 (word frequencies). Split on whitespace. Lower-case. Trim punctuation. `frequencies`. `sort-by` for `top-n`.
->
-> Close the guide. Begin.
 
----
 
-## 11. `group-by`
+> ## Complete kata 2 ("word frequencies") before continuing
+
+
+
+## 12. `group-by`
 
 ```clojure
 (group-by odd? [1 2 3 4 5])
@@ -342,13 +339,13 @@ For "rank by count desc, ties alphabetical asc" you want `(sort-by (juxt #(- (va
 
 The pattern: pick a *canonical form* (a key function), let `group-by` bucket things, then post-process. For anagrams, the canonical form of a word is its sorted lowercased letters.
 
-> Enough for Kata 3 (anagrams). Anagrams share a canonical form. `group-anagrams` is `(vals (group-by canonical-form strings))`. Insertion order matters — don't lean on `group-by`'s array-map; let the tests tell you.
->
-> Close the guide. Begin.
 
----
 
-## 12. More sequence operations
+> ## Complete kata 3 ("anagrams") before continuing
+
+
+
+## 13. More sequence operations
 
 ```clojure
 (partition 3 [1 2 3 4 5 6])         ; => ((1 2 3) (4 5 6))
@@ -366,13 +363,13 @@ The pattern: pick a *canonical form* (a key function), let `group-by` bucket thi
 
 `partition-by` splits a seq into runs of "equal under f" — run-length encoding falls out of it directly.
 
-> Enough for Kata 4 (RLE). `partition-by identity`, then `(map (juxt count first) ...)`. Decode is `mapcat` of `repeat`. One implementation — strings, vectors, lazy seqs alike.
->
-> Close the guide. Begin.
 
----
 
-## 13. Laziness in earnest
+> ## Complete kata 4 ("RLE") before continuing
+
+
+
+## 14. Laziness in earnest
 
 You've been using lazy seqs (everything `map`/`filter`/`range` produces). Now you'll *build* one.
 
@@ -398,13 +395,13 @@ Two caveats with lazy seqs:
 1. Side effects inside laziness happen *when realised*, not when defined. Don't rely on ordering or "did it run."
 2. Holding the head of a long lazy seq while walking it can pin the whole thing in memory ("head retention"). Usually not a problem; just be aware.
 
-> Enough for Kata 5 (primes). `(def primes (filter prime? (iterate inc 2)))` works — O(n√n) per prime. Then a `lazy-seq` testing each candidate against the primes already found. Write the slow one first.
->
-> Close the guide. Begin.
 
----
 
-## 14. Sets — both predicate and data
+> ## Complete kata 5 ("primes") before continuing
+
+
+
+## 15. Sets — both predicate and data
 
 Sets as predicates (the most underrated idiom):
 
@@ -424,17 +421,17 @@ Set operations live in `clojure.set`:
 (set/difference #{1 2 3} #{2})   ; => #{1 3}
 ```
 
-The Game of Life encoding — *the set of live cells is the world* — is a small revelation. The grid is implicitly infinite. To advance, generate every cell that could possibly change (the alive cells + their neighbours), tally each one's live-neighbour count with `frequencies` over `(mapcat neighbours alive)`, and keep the ones that survive or are born.
+The Game of Life encoding: *the set of live cells is the world*. The grid is implicitly infinite. To advance, generate every cell that could possibly change (the alive cells + their neighbours), tally each one's live-neighbour count with `frequencies` over `(mapcat neighbours alive)`, and keep the ones that survive or are born.
 
-> Enough for Kata 6 (Game of Life). A minute on paper first. Two helpers: `neighbours` of a cell, `step` of a world. That is all.
->
-> Close the guide. Begin.
 
----
 
-## 15. Recursion — `loop`/`recur` and state machines
+> ## Complete kata 6 ("Game of Life") before continuing
 
-The JVM doesn't optimise tail calls automatically. Clojure exposes them via the explicit `recur` form, which jumps back to an enclosing `loop` or function with new bindings:
+
+
+## 16. Recursion — `loop`/`recur`
+
+The host doesn't optimise tail calls automatically. Clojure exposes them via the explicit `recur` form, which jumps back to an enclosing `loop` or function with new bindings:
 
 ```clojure
 (defn factorial [n]
@@ -449,11 +446,15 @@ The JVM doesn't optimise tail calls automatically. Clojure exposes them via the 
 
 For most problems, prefer `reduce` or a higher-order function over hand-rolled `loop`/`recur`. Reach for `loop` when you genuinely have an accumulator that doesn't fit a fold.
 
-> Enough for Kata 7 (Roman numerals). A descending table of `[value symbol]`. `loop`/`recur` or `reduce`. Then the inverse. Let the round-trip judge it.
->
-> Close the guide. Begin.
 
-That covers the gentle case. The step up is a loop whose next move depends on what it just consumed — a *state machine*. Some problems don't fit a fold cleanly; bowling is the classic. The rules look at variable amounts of "lookahead" depending on what happened in the current frame. The shape is:
+
+> ## Complete kata 7 ("Roman numerals") before continuing
+
+
+
+## 17. Recursion — state machines
+
+Some loops aren't a fold: the next move depends on what was just consumed — a *state machine*. Bowling is the classic; the rules look at a variable amount of "lookahead" depending on what happened in the current frame. The shape:
 
 ```clojure
 (defn score [rolls]
@@ -473,15 +474,15 @@ The key habits:
 - Don't try to mutate; `recur` with new values.
 - Frame counter as an explicit loop variable.
 
-> Enough for Kata 8 (bowling). The 10th frame's bonus rolls start no new frame. Stop on `frame > 10`, not `(empty? rolls)`.
->
-> Close the guide. Begin.
 
----
 
-## 16. Identity vs value — atoms, `ex-info`
+> ## Complete kata 8 ("bowling") before continuing
 
-So far, everything has been pure. Real systems have state. Clojure's answer: a *value* is immutable, but an *identity* — a thing that holds different values over time — is explicit.
+
+
+## 18. Identity vs value — atoms, `ex-info`
+
+Until now everything has been pure; real systems hold state. Clojure separates the two: a *value* is immutable; an *identity* — a thing that holds different values over time — is an explicit reference you `deref`.
 
 ```clojure
 (def counter (atom 0))
@@ -519,13 +520,13 @@ So far, everything has been pure. Real systems have state. Clojure's answer: a *
 
 You almost never define a custom exception class in Clojure. `ex-info` carries arbitrary data; the consumer matches on `(:type (ex-data e))`.
 
-> Enough for Kata 9 (bank account). A thousand futures, one account. The read and the update belong inside `swap!`, not around it.
->
-> Close the guide. Begin.
 
----
 
-## 17. Dispatch — maps of functions
+> ## Complete kata 9 ("bank account") before continuing
+
+
+
+## 19. Dispatch — maps of functions
 
 Before reaching for the heavy polymorphism tools, notice that a map of functions is often all you need:
 
@@ -552,17 +553,17 @@ For RPN, your token handler distinguishes "this is a number → push" from "this
 (symbol '+)   ; => +
 ```
 
-> Enough for Kata 10 (RPN). `reduce` over tokens; the accumulator is the stack. `dup`/`drop`/`swap` shape it; `+`/`-`/`*`/`/` fold it. One table or two — your call.
->
-> Close the guide. Begin.
 
----
 
-## 18. Real polymorphism — protocols, records, multimethods
+> ## Complete kata 10 ("RPN") before continuing
+
+
+
+## 20. Real polymorphism — protocols, records, multimethods
 
 Two complementary tools. Both are open in different axes.
 
-**Protocols** group methods by *type*. Closed set of methods, open set of types implementing them — like a Java interface, but you can add implementations to types you don't own.
+**Protocols** group methods by *type*. Closed set of methods, open set of types implementing them — like an interface, but you can add implementations to types you don't own.
 
 ```clojure
 (defprotocol Shape
@@ -592,17 +593,17 @@ A `defrecord` generates a `->Circle` positional constructor and a `map->Circle` 
 ```
 
 **When to use which:**
-- All implementations cluster around a *type*? Protocol. (Faster, IDE-friendly.)
-- All implementations cluster around a *behaviour* and the dispatch key isn't a JVM type? Multimethod.
+- All implementations cluster around a *type*? Protocol. (Faster, easier to navigate.)
+- All implementations cluster around a *behaviour* and the dispatch key isn't a host type? Multimethod.
 - Hierarchical dispatch (`derive`/`isa?`)? Only multimethods.
 
-> Enough for Kata 11 (shapes). It asks for both protocols and multimethods on purpose. Build both; feel the difference.
->
-> Close the guide. Begin.
 
----
 
-## 19. Macros — code as data, finally cashed in
+> ## Complete kata 11 ("shapes") before continuing
+
+
+
+## 21. Macros — code as data, finally cashed in
 
 A macro is a function that runs at *compile time* and returns a form to be compiled in its place. Because Clojure source is just nested lists, that "form" is a regular Clojure data structure you build with regular Clojure code.
 
@@ -640,13 +641,13 @@ The `v#` becomes a unique symbol like `v__1234__auto__`. You'd never accidentall
 
 **When to write a macro.** Not often. If a function works, use a function — macros don't compose, can't be `apply`d, and obscure stack traces. Write a macro when you need to control *evaluation* (don't evaluate the second arg unless...) or *binding* (introduce a name visible in the body).
 
-> Enough for Kata 12 (`when-let*`). Sketch the expansion first: what does `(when-let* [a 1, b 2] (+ a b))` become? A nest of `when-let`. Recurse over the pairs at macroexpand time. Gensym your temporaries.
->
-> Close the guide. Begin.
 
----
 
-## 20. The capstone — writing an interpreter
+> ## Complete kata 12 ("when-let*") before continuing
+
+
+
+## 22. The capstone — writing an interpreter
 
 By the time you sit down with Kata 13, you have everything. A tree-walking interpreter for a Lisp-y language is a perfect closer because:
 
@@ -667,23 +668,21 @@ The shape:
 ```
 
 The lessons from every prior kata show up:
-- `cond` for dispatch (§3)
-- destructuring of forms (§4)
-- `reduce` over args (§6)
-- `ex-info` for unbound symbols / unknown forms (§16)
-- sequential `let` is a left fold over bindings (§15, §16)
+- `cond` for dispatch (§4)
+- destructuring of forms (§5)
+- `reduce` over args (§7)
+- `ex-info` for unbound symbols / unknown forms (§18)
+- sequential `let` is a left fold over bindings (§16, §18)
 
-> Enough for Kata 13 (the interpreter). Everything you have practised returns here.
->
-> Close the guide. This last form, you walk alone.
 
----
+
+> ## Complete kata 13 ("the interpreter") before continuing
+
+
 
 ## Going further
 
-- **[Community Clojure Style Guide](https://github.com/bbatsov/clojure-style-guide)** — skim it, then re-read after every 2–3 katas; you'll notice things you didn't before.
-- **clojure.core** has ~600 functions. You don't need all of them. When you need one, ask the REPL — `dir`, `apropos`, `doc`, `source` — not the web.
-- **REPL-driven development**: get a REPL connected to your editor (CIDER for Emacs, Calva for VS Code, Cursive for IntelliJ). Send forms to the REPL as you write — don't reload files. This is the workflow that makes Clojure productive.
-- **Joy of Clojure** (Fogus & Houser) or **Programming Clojure** (Halloway & Bedra) when you want a book. Skip "Clojure for the Brave and True" — fun, but you're past its level.
+- **clojure.core** has ~600 functions; you won't need most of them.
+- **Joy of Clojure** (Fogus & Houser) or **Programming Clojure** (Halloway & Bedra) when you want a book.
 
-It will feel slow for a while. The slowness is not in your way — it is the practice.
+It will feel slow for the first few weeks. That's normal; fluency comes before speed.

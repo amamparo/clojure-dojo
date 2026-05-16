@@ -2,9 +2,6 @@
 
 ;; ─── Kata 7: Roman numerals ────────────────────────────────────────────
 ;;
-;; You are learning: lookup tables, `reduce`, threading, recursion, and
-;; round-trip thinking — writing two functions that should be inverses.
-;;
 ;; Roman symbols:
 ;;   I=1  V=5  X=10  L=50  C=100  D=500  M=1000
 ;; Subtractive forms:

@@ -3,10 +3,6 @@
 
 ;; ─── Kata 3: Anagrams ──────────────────────────────────────────────────
 ;;
-;; You are learning: `group-by`, choosing a canonical form as a map key,
-;; preserving insertion order with sequences over maps, and case
-;; normalisation with `clojure.string/lower-case`.
-;;
 ;; Two strings are anagrams iff one is a rearrangement of the letters of
 ;; the other (case-insensitive). Treat the entire string as letters; do
 ;; not strip whitespace or punctuation.

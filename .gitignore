@@ -1,14 +1,6 @@
 .cpcache/
-.lsp/
-.calva/
-target/
+.clj-kondo/.cache/
 .idea/
 *.iml
-.vscode/
 .DS_Store
 .claude/settings.local.json
-
-# AoC author asks people not to share their personal puzzle inputs.
-# Real inputs (day01.txt etc.) are gitignored; sample inputs (day01_sample.txt) are committed.
-resources/inputs/day*.txt
-!resources/inputs/day*_sample.txt

@@ -2,10 +2,6 @@
 
 ;; ─── Kata 5: Lazy primes ───────────────────────────────────────────────
 ;;
-;; You are learning: `lazy-seq`, infinite sequences, the difference
-;; between a function that returns a seq and a `def` that holds one,
-;; `take` / `take-while` / `nth`.
-;;
 ;; `prime?`: predicate on a non-negative integer.
 ;;
 ;;   (prime? 0)  => false

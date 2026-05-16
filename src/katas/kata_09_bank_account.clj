@@ -2,10 +2,6 @@
 
 ;; ─── Kata 9: Bank account ──────────────────────────────────────────────
 ;;
-;; You are learning: identity vs. value, atoms, `swap!`, `deref` (`@`),
-;; throwing structured errors with `ex-info`, and writing code that is
-;; safe under concurrent updates.
-;;
 ;; Model an account as an atom holding
 ;;   {:balance <number>, :history [[<op> <amount>] ...]}
 ;;

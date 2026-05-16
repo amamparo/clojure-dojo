@@ -2,10 +2,6 @@
 
 ;; ─── Kata 1: FizzBuzz ──────────────────────────────────────────────────
 ;;
-;; You are learning: function definition (`defn`), conditional logic
-;; (`cond`), modular arithmetic (`mod`), and producing a sequence from a
-;; range (`map` over `range`, or `for`).
-;;
 ;; Implement `fizzbuzz`. Given a non-negative integer `n`, return a
 ;; vector of length `n`. The element at 1-based position `i` is:
 ;;
