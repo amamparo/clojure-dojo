@@ -1,5 +1,4 @@
 .cpcache/
-.clj-kondo/
 .lsp/
 .calva/
 target/
