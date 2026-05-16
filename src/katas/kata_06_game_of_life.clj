@@ -1,6 +1,6 @@
 (ns katas.kata-06-game-of-life)
 
-;; ─── Kata 6: Conway's Game of Life ─────────────────────────────────────
+;; ─── Kata 6: Conway's Game of Life ────────────────────────────────────
 ;;
 ;; Represent a generation as a SET of `[x y]` integer pairs — exactly
 ;; the coordinates of the alive cells. Dead cells are everything else.
@@ -25,10 +25,6 @@
 ;;   ;; A 2×2 block is a still life:
 ;;   (step #{[0 0] [1 0] [0 1] [1 1]})
 ;;     => #{[0 0] [1 0] [0 1] [1 1]}
-;;
-;; Hint: tally each candidate cell's live-neighbour count using
-;; `frequencies` over `(mapcat neighbours alive)`, then keep cells that
-;; satisfy the survival or birth rule.
 
 (defn step [alive]
   ;; TODO
