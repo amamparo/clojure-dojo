@@ -1,7 +1,7 @@
-(ns katas.kata-13-interpreter-test
+(ns katas.kata-14-interpreter-test
   (:require [clojure.test :refer [deftest is testing]]
             [matcher-combinators.test]
-            [katas.kata-13-interpreter :refer [evaluate]]))
+            [katas.kata-14-interpreter :refer [evaluate]]))
 
 (deftest self-evaluating
   (is (match? 42    (evaluate {} 42)))

@@ -1,6 +1,6 @@
-(ns katas.kata-12-when-let-star)
+(ns katas.kata-13-when-let-star)
 
-;; ─── Kata 12: when-let* ────────────────────────────────────────────────
+;; ─── Kata 13: when-let* ───────────────────────────────────────────────────
 ;;
 ;; `when-let*` is `clojure.core/when-let` extended to multiple bindings.
 ;; It evaluates each binding form in order. If any binding's value is

@@ -1,6 +1,6 @@
-(ns katas.kata-13-interpreter)
+(ns katas.kata-14-interpreter)
 
-;; ─── Kata 13: Tiny interpreter ─────────────────────────────────────────
+;; ─── Kata 14: Tiny interpreter ──────────────────────────────────────────────
 ;;
 ;; Capstone: a small expression interpreter that puts together everything
 ;; from the previous katas.

@@ -1,7 +1,7 @@
-(ns katas.kata-12-when-let-star-test
+(ns katas.kata-13-when-let-star-test
   (:require [clojure.test :refer [deftest is testing]]
             [matcher-combinators.test]
-            [katas.kata-12-when-let-star :refer [when-let*]]))
+            [katas.kata-13-when-let-star :refer [when-let*]]))
 
 (deftest single-binding-truthy
   (is (match? 6 (when-let* [a 6] a))))
@@ -51,4 +51,4 @@
   (testing "an odd number of binding forms is rejected at macroexpansion"
     (is (thrown? IllegalArgumentException
                  (macroexpand-1
-                  '(katas.kata-12-when-let-star/when-let* [a 1 b]))))))
+                  '(katas.kata-13-when-let-star/when-let* [a 1 b]))))))

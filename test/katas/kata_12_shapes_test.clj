@@ -1,10 +1,10 @@
-(ns katas.kata-11-shapes-test
+(ns katas.kata-12-shapes-test
   (:require [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
             [matcher-combinators.test]
-            [katas.kata-11-shapes :as shapes
+            [katas.kata-12-shapes :as shapes
              :refer [Shape area perimeter describe
-                     ->Circle ->Rectangle ->RightTriangle]]))
+                     ->Circle ->Rectangle ->RightTriangle ->Square]]))
 
 (deftest circle-area
   (is (match? Math/PI         (area (->Circle 1))))
@@ -26,10 +26,19 @@
   (testing "perimeter uses the hypotenuse"
     (is (match? 30 (perimeter (->RightTriangle 5 12))))))
 
+(deftest square
+  (is (match? 1  (area (->Square 1))))
+  (is (match? 4  (perimeter (->Square 1))))
+  (is (match? 16 (area (->Square 4))))
+  (is (match? 16 (perimeter (->Square 4))))
+  (is (match? 25 (area (->Square 5))))
+  (is (match? 20 (perimeter (->Square 5)))))
+
 (deftest all-records-satisfy-shape
   (is (satisfies? Shape (->Circle 1)))
   (is (satisfies? Shape (->Rectangle 1 2)))
-  (is (satisfies? Shape (->RightTriangle 3 4))))
+  (is (satisfies? Shape (->RightTriangle 3 4)))
+  (is (satisfies? Shape (->Square 5))))
 
 (deftest describe-circle
   (is (match? "circle with radius 2" (describe {:kind :circle :r 2}))))
@@ -39,6 +48,9 @@
 
 (deftest describe-triangle
   (is (match? "right triangle 3, 4" (describe {:kind :triangle :a 3 :b 4}))))
+
+(deftest describe-square
+  (is (match? "square with side 4" (describe {:kind :square :s 4}))))
 
 (deftest describe-unknown-falls-through
   (testing "an unknown :kind falls through to a default that mentions it"
