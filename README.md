@@ -1,15 +1,21 @@
 # clojure-dojo
 
-A personal practice space for Clojure katas.
+Clojure, by hand.
 
 ## The guide
 
-[SENSEI.md](SENSEI.md) is a fast ramp into Clojure, ordered so each section
-unlocks the next kata in this repo. Written assuming you're fluent in Python
-and Java but new to functional programming — **read and follow it.**
+[SENSEI.md](SENSEI.md). Thirteen katas, in order. No clock. No streak.
 
-It's meant to be skimmed top-to-bottom once, then revisited per-section as you
-sit down with each kata. At each checkpoint, stop reading and go write code.
+Written for engineers who think in Python or Java and want, for a while, to
+think in something else. Read a little. Stop. Write.
+
+## The katas
+
+Each kata is a stub with a failing test. The red is the question; you write
+the answer. The test going green is a quiet yes — nothing to chase.
+
+Nothing here needs the internet. The REPL is the manual (`doc`, `source`,
+`apropos`); the tests are the answer.
 
 ## Requirements
 
@@ -36,10 +42,6 @@ Inside Cursive:
 ```sh
 clj -A:test     # REPL with the test path on the classpath
 ```
-
-Tests are plain `clojure.test`. Katas ship as `;; TODO` stubs with the tests
-written against the intended solution, so a fresh clone has **failing tests by
-design** — solve the kata to make them green.
 
 ## Style
 

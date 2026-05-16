@@ -4,13 +4,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A personal practice space for Clojure katas. [SENSEI.md](SENSEI.md) is the
 kata-aligned learning narrative for Java/Python engineers — its sections are a
-concept progression, each kata gated by a `> By this point…` checkpoint.
+concept progression, each kata gated by a `> Enough for Kata N` checkpoint.
 [README.md](README.md) is the human quickstart; this file is authoritative
 for Claude.
 
 When writing or reviewing Clojure here, follow the [Community Clojure Style
 Guide](https://github.com/bbatsov/clojure-style-guide); there is no vendored
 style file in this repo.
+
+The dojo is intentionally offline / self-contained: SENSEI.md plus the REPL
+(`doc`, `source`, `dir`, `apropos`, `find-doc`) and the test suites are the
+only references a learner needs. Don't send the user to clojuredocs or the
+web — point them at the REPL.
 
 > **No CLI scaffolding.** This repo deliberately has no `justfile`,
 > `tests.edn`, CLI test runner, formatter, or linter — everything runs
@@ -85,7 +90,7 @@ stubs.
   referenced externally. When inserting a new kata at position K, renumber
   everything ≥ K. For each moved kata that means: move the source file and
   update its `ns` form and `;; ─── Kata N:` header; move the test file and
-  update its `ns` + `:require`; and update the matching `> By this point …
+  update its `ns` + `:require`; and update the matching `> Enough for
   Kata N` checkpoint in [SENSEI.md](SENSEI.md). The files are the source of
   truth — there is no kata list in the README.
 

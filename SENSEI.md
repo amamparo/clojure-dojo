@@ -1,8 +1,21 @@
-# Clojure for Java/Python Engineers — A Kata-Aligned Guide
+# SENSEI
+
+A path through Clojure. Thirteen forms. Walk it slowly.
+
+Begin when you are sitting down and the room is quiet.
+
+Nothing you need is online — only this file, a REPL, and the tests.
+
+The REPL is the manual. `(doc f)` — what it does. `(source f)` — how it was
+made. `(dir clojure.string)`, `(apropos "split")`, `(find-doc "count")` when
+a name escapes you.
+
+The tests are the answer. Run them; they say yes or no. Nothing to ask — not
+a search box, not a machine.
 
 ## 0. Mental model
 
-Three ideas to internalise up front. Everything else is mechanical.
+Three ideas. Sit with them. The rest is mechanical.
 
 **Code is data.** A Clojure program is a tree of lists, vectors, and maps. The compiler reads this tree and evaluates it. That's it. There's no separate "AST" — the source *is* the AST. This is why macros are tractable in Lisps: a macro is just a function from tree to tree.
 
@@ -206,7 +219,9 @@ The seq abstraction is Clojure's iterator protocol. Almost every collection can 
 
 **Sequences are lazy by default.** `(map f xs)` returns a lazy seq; nothing is computed until something pulls on it. This is mostly invisible until you do I/O inside a `map`, at which point you'll be confused why nothing happened. Force with `doall`, or use `mapv` / `filterv` for eager vectors.
 
-> **By this point, you've learned enough to complete Kata 1 (FizzBuzz).** You now have `defn`, `cond`, `mod`, and `map` over `range` (or a `for` comprehension) — the whole kata. Stop reading and write it.
+> Enough for Kata 1 (FizzBuzz). `defn`, `cond`, `mod`, `map` over `range` — or a `for`. The whole form.
+>
+> Close the guide. Begin.
 
 ---
 
@@ -309,7 +324,9 @@ Custom comparators: a 2-arg fn returning negative/zero/positive, or a 2-arg pred
 
 For "rank by count desc, ties alphabetical asc" you want `(sort-by (juxt #(- (val %)) key) m)` or similar — chew on that before reading on.
 
-> **By this point, you've learned enough to complete Kata 2 (word frequencies).** `clojure.string/split` on whitespace, lower-case each word, trim punctuation with a regex or character set, count with `frequencies`, then `sort-by` for `top-n`.
+> Enough for Kata 2 (word frequencies). Split on whitespace. Lower-case. Trim punctuation. `frequencies`. `sort-by` for `top-n`.
+>
+> Close the guide. Begin.
 
 ---
 
@@ -325,7 +342,9 @@ For "rank by count desc, ties alphabetical asc" you want `(sort-by (juxt #(- (va
 
 The pattern: pick a *canonical form* (a key function), let `group-by` bucket things, then post-process. For anagrams, the canonical form of a word is its sorted lowercased letters.
 
-> **By this point, you've learned enough to complete Kata 3 (anagrams).** Two strings are anagrams iff their canonical forms are equal. `group-anagrams` is `(vals (group-by canonical-form strings))` — but you'll want to think about preserving insertion order (hint: `group-by` already uses an array-map for small inputs, but don't rely on that — see what your tests demand).
+> Enough for Kata 3 (anagrams). Anagrams share a canonical form. `group-anagrams` is `(vals (group-by canonical-form strings))`. Insertion order matters — don't lean on `group-by`'s array-map; let the tests tell you.
+>
+> Close the guide. Begin.
 
 ---
 
@@ -347,7 +366,9 @@ The pattern: pick a *canonical form* (a key function), let `group-by` bucket thi
 
 `partition-by` splits a seq into runs of "equal under f" — run-length encoding falls out of it directly.
 
-> **By this point, you've learned enough to complete Kata 4 (RLE).** `partition-by identity` then `(map (juxt count first) ...)`. Decode is `mapcat` of `repeat`. The trick is making both work seamlessly on strings, vectors, and lazy seqs — that's the seq abstraction earning its keep.
+> Enough for Kata 4 (RLE). `partition-by identity`, then `(map (juxt count first) ...)`. Decode is `mapcat` of `repeat`. One implementation — strings, vectors, lazy seqs alike.
+>
+> Close the guide. Begin.
 
 ---
 
@@ -377,7 +398,9 @@ Two caveats with lazy seqs:
 1. Side effects inside laziness happen *when realised*, not when defined. Don't rely on ordering or "did it run."
 2. Holding the head of a long lazy seq while walking it can pin the whole thing in memory ("head retention"). Usually not a problem; just be aware.
 
-> **By this point, you've learned enough to complete Kata 5 (primes).** Trial division with a `prime?` predicate, then `(def primes (filter prime? (iterate inc 2)))` is a one-liner that works but is O(n√n) per prime. A faster idiomatic version uses `lazy-seq` with a recursive helper that tests candidates against the primes already produced — closer to what the kata description hints at. Write the simple version first, then the lazy-recursive one.
+> Enough for Kata 5 (primes). `(def primes (filter prime? (iterate inc 2)))` works — O(n√n) per prime. Then a `lazy-seq` testing each candidate against the primes already found. Write the slow one first.
+>
+> Close the guide. Begin.
 
 ---
 
@@ -403,7 +426,9 @@ Set operations live in `clojure.set`:
 
 The Game of Life encoding — *the set of live cells is the world* — is a small revelation. The grid is implicitly infinite. To advance, generate every cell that could possibly change (the alive cells + their neighbours), tally each one's live-neighbour count with `frequencies` over `(mapcat neighbours alive)`, and keep the ones that survive or are born.
 
-> **By this point, you've learned enough to complete Kata 6 (Game of Life).** Spend a minute on paper before coding. Two helpers (`neighbours` of a coordinate, and `step` of a world) are all you need.
+> Enough for Kata 6 (Game of Life). A minute on paper first. Two helpers: `neighbours` of a cell, `step` of a world. That is all.
+>
+> Close the guide. Begin.
 
 ---
 
@@ -424,7 +449,9 @@ The JVM doesn't optimise tail calls automatically. Clojure exposes them via the 
 
 For most problems, prefer `reduce` or a higher-order function over hand-rolled `loop`/`recur`. Reach for `loop` when you genuinely have an accumulator that doesn't fit a fold.
 
-> **By this point, you've learned enough to complete Kata 7 (Roman numerals).** You'll want a lookup table (a vector of `[value symbol]` pairs in descending order), a `loop`/`recur` or `reduce`, and the inverse going the other way. Round-trip via your tests.
+> Enough for Kata 7 (Roman numerals). A descending table of `[value symbol]`. `loop`/`recur` or `reduce`. Then the inverse. Let the round-trip judge it.
+>
+> Close the guide. Begin.
 
 That covers the gentle case. The step up is a loop whose next move depends on what it just consumed — a *state machine*. Some problems don't fit a fold cleanly; bowling is the classic. The rules look at variable amounts of "lookahead" depending on what happened in the current frame. The shape is:
 
@@ -446,7 +473,9 @@ The key habits:
 - Don't try to mutate; `recur` with new values.
 - Frame counter as an explicit loop variable.
 
-> **By this point, you've learned enough to complete Kata 8 (bowling).** Tip: in the 10th frame the bonus rolls don't start a new frame. Your loop's stopping condition is `frame > 10`, not `(empty? rolls)`.
+> Enough for Kata 8 (bowling). The 10th frame's bonus rolls start no new frame. Stop on `frame > 10`, not `(empty? rolls)`.
+>
+> Close the guide. Begin.
 
 ---
 
@@ -490,7 +519,9 @@ So far, everything has been pure. Real systems have state. Clojure's answer: a *
 
 You almost never define a custom exception class in Clojure. `ex-info` carries arbitrary data; the consumer matches on `(:type (ex-data e))`.
 
-> **By this point, you've learned enough to complete Kata 9 (bank account).** Read the kata's concurrency note carefully — the test fires 1,000 futures at one account. The point of the test is to make you put the read-update logic inside `swap!`, not around it.
+> Enough for Kata 9 (bank account). A thousand futures, one account. The read and the update belong inside `swap!`, not around it.
+>
+> Close the guide. Begin.
 
 ---
 
@@ -521,7 +552,9 @@ For RPN, your token handler distinguishes "this is a number → push" from "this
 (symbol '+)   ; => +
 ```
 
-> **By this point, you've learned enough to complete Kata 10 (RPN).** A `reduce` over tokens, with the accumulator being the stack. `dup`/`drop`/`swap` are stack-shape ops; `+`/`-`/`*`/`/` are arithmetic ops; reach for two dispatch tables or one with a small union type, your call.
+> Enough for Kata 10 (RPN). `reduce` over tokens; the accumulator is the stack. `dup`/`drop`/`swap` shape it; `+`/`-`/`*`/`/` fold it. One table or two — your call.
+>
+> Close the guide. Begin.
 
 ---
 
@@ -563,7 +596,9 @@ A `defrecord` generates a `->Circle` positional constructor and a `map->Circle` 
 - All implementations cluster around a *behaviour* and the dispatch key isn't a JVM type? Multimethod.
 - Hierarchical dispatch (`derive`/`isa?`)? Only multimethods.
 
-> **By this point, you've learned enough to complete Kata 11 (shapes).** The kata deliberately does both — it'll make the trade-off concrete.
+> Enough for Kata 11 (shapes). It asks for both protocols and multimethods on purpose. Build both; feel the difference.
+>
+> Close the guide. Begin.
 
 ---
 
@@ -605,7 +640,9 @@ The `v#` becomes a unique symbol like `v__1234__auto__`. You'd never accidentall
 
 **When to write a macro.** Not often. If a function works, use a function — macros don't compose, can't be `apply`d, and obscure stack traces. Write a macro when you need to control *evaluation* (don't evaluate the second arg unless...) or *binding* (introduce a name visible in the body).
 
-> **By this point, you've learned enough to complete Kata 12 (`when-let*`).** Sketch the expansion first — what should `(when-let* [a 1, b 2] (+ a b))` turn into? It's a nest of `when-let`s. Recurse over the binding pairs at macroexpansion time. Use auto-gensyms or explicit `gensym` for any temporaries.
+> Enough for Kata 12 (`when-let*`). Sketch the expansion first: what does `(when-let* [a 1, b 2] (+ a b))` become? A nest of `when-let`. Recurse over the pairs at macroexpand time. Gensym your temporaries.
+>
+> Close the guide. Begin.
 
 ---
 
@@ -636,15 +673,17 @@ The lessons from every prior kata show up:
 - `ex-info` for unbound symbols / unknown forms (§16)
 - sequential `let` is a left fold over bindings (§15, §16)
 
-> **By this point, you've learned enough to complete Kata 13 (interpreter).** This is the one where it all clicks. Write it; you'll know Clojure when you're done.
+> Enough for Kata 13 (the interpreter). Everything you have practised returns here.
+>
+> Close the guide. This last form, you walk alone.
 
 ---
 
 ## Going further
 
 - **[Community Clojure Style Guide](https://github.com/bbatsov/clojure-style-guide)** — skim it, then re-read after every 2–3 katas; you'll notice things you didn't before.
-- **clojure.core** has ~600 functions. You don't need all of them, but skimming the [cheatsheet](https://clojure.org/api/cheatsheet) once is a high-ROI hour.
+- **clojure.core** has ~600 functions. You don't need all of them. When you need one, ask the REPL — `dir`, `apropos`, `doc`, `source` — not the web.
 - **REPL-driven development**: get a REPL connected to your editor (CIDER for Emacs, Calva for VS Code, Cursive for IntelliJ). Send forms to the REPL as you write — don't reload files. This is the workflow that makes Clojure productive.
 - **Joy of Clojure** (Fogus & Houser) or **Programming Clojure** (Halloway & Bedra) when you want a book. Skip "Clojure for the Brave and True" — fun, but you're past its level.
 
-Functional programming will feel slow for two weeks and faster than anything you've used after a month. Stick with it through the awkward middle.
+It will feel slow for a while. The slowness is not in your way — it is the practice.
