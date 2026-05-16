@@ -178,7 +178,11 @@ Anonymous functions — two forms:
 #(* % %)             ; shorthand; %, %1, %2 for args
 ```
 
-Three rules, in order: prefer the bare function when it works — `(filter even? xs)`, not `(filter #(even? %) xs)`. Reach for `#(…)` for short single-form bodies that actually do something — `#(* % %)`. Reach for `fn` for anything multi-form, or where naming the parameter helps the reader.
+Three rules, in order:
+
+1. Prefer the bare function when it works — `(filter even? xs)`, not `(filter #(even? %) xs)`.
+2. Reach for `#(…)` for short single-form bodies that actually do something — `#(* % %)`.
+3. Reach for `fn` for anything multi-form, or where naming the parameter helps the reader.
 
 Functions are values: pass them, return them, store them. This will feel like the anonymous functions you've used before, but used vastly more. The standard library is built around higher-order functions; you'll use them constantly.
 
