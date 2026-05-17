@@ -5,7 +5,7 @@
 #   just test 1                every test for kata 1
 #   just test 1 some-test      the test `some-test` in kata 1
 test *args:
-    clojure -M:test -m runner {{args}}
+    clojure -M:test -m runner {{ args }}
 
 # Lint src and test with clj-kondo.
 lint:
