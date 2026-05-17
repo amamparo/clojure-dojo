@@ -1,19 +1,24 @@
 (ns katas.kata-09-bank-account)
 
-;; ─── Kata 9: Bank account ──────────────────────────────────────────────
+;; ─── Kata 9: Bank account ──────────────────────────────
 ;;
 ;; Model an account as an atom holding
-;;   {:balance <number>, :history [[<op> <amount>] ...]}
+;;   {:balance <number>
+;;    :history [{:op <op-keyword> :amount <number>} ...]}
 ;;
 ;; Implement:
 ;;
-;;   (open-account)        ; balance 0,    history [[:open 0]]
-;;   (open-account 100)    ; balance 100,  history [[:open 100]]
+;;   (open-account)        ; balance 0,    history [{:op :open :amount 0}]
+;;   (open-account 100)    ; balance 100,  history [{:op :open :amount 100}]
 ;;   (balance acct)        ; the current balance
-;;   (deposit! acct n)     ; mutate, append [:deposit n] to history,
-;;                         ; return the NEW balance.
-;;   (withdraw! acct n)    ; mutate, append [:withdraw n], return balance.
-;;   (history acct)        ; vector of [op amount] entries in order.
+;;   (deposit! acct n)     ; mutate, append {:op :deposit :amount n} to
+;;                         ; history, return the NEW balance.
+;;   (withdraw! acct n)    ; mutate, append {:op :withdraw :amount n} to
+;;                         ; history, return the new balance.
+;;   (history acct)        ; vector of history entries in order.
+;;
+;; History entries are maps, not tuples — the shape can grow new fields
+;; (timestamps, memos, ids) later without breaking callers or tests.
 ;;
 ;; Errors (use `ex-info`):
 ;;   - amount < 0 or non-numeric         → {:type :invalid-amount}
