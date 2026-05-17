@@ -565,10 +565,6 @@ A note on the test files. Most of the suite uses `(is (= expected actual))` — 
 
 
 
-You now have a fold (`reduce`), state in a map, and structured errors (`ex-info`). A couple more katas before §19 introduces a new idea.
-
-
-
 > ## Complete kata 10 ("assignments") before continuing
 
 
@@ -747,7 +743,9 @@ Everything else falls out of the techniques from the prior katas. Trust them.
 
 ## Going further
 
-- **clojure.core** has ~600 functions; you won't need most of them.
-- **Joy of Clojure** (Fogus & Houser) or **Programming Clojure** (Halloway & Bedra) when you want a book.
+- **[Clojure cheatsheet](https://clojure.org/api/cheatsheet)** — every core function on one page, grouped by what they operate on. (You won't need most of them.) **[clojuredocs.org](https://clojuredocs.org)** has community-contributed examples for each.
+- **Joy of Clojure** (Fogus & Houser) or **Programming Clojure** (Miller, Halloway & Bedra) when you want a book.
+- Rich Hickey's talks — "Simple Made Easy", "The Value of Values", "Hammock Driven Development" — for the reasons the language is shaped the way it is.
+- **[4ever-clojure](https://4clojure.oxal.org/)** when you want more problems.
 
 It will feel slow for the first few weeks. That's normal; fluency comes before speed.
