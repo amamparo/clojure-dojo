@@ -17,5 +17,9 @@
 ;;                     11 "Fizz" 13 14 "FizzBuzz"]
 
 (defn fizzbuzz [n]
-  ;; TODO
-  )
+  (map #(cond
+          (zero? (mod % 15)) "FizzBuzz"
+          (zero? (mod % 3)) "Fizz"
+          (zero? (mod % 5)) "Buzz"
+          :else %)
+       (range 1 (inc n))))
