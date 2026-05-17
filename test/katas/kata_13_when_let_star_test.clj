@@ -1,24 +1,23 @@
 (ns katas.kata-13-when-let-star-test
   (:require [clojure.test :refer [deftest is testing]]
-            [matcher-combinators.test]
             [katas.kata-13-when-let-star :refer [when-let*]]))
 
 (deftest single-binding-truthy
-  (is (match? 6 (when-let* [a 6] a))))
+  (is (= 6 (when-let* [a 6] a))))
 
 (deftest single-binding-falsey
   (is (nil? (when-let* [a nil] :unreached)))
   (is (nil? (when-let* [a false] :unreached))))
 
 (deftest multiple-bindings-all-truthy
-  (is (match? 3 (when-let* [a 1
-                            b 2]
-                  (+ a b)))))
+  (is (= 3 (when-let* [a 1
+                       b 2]
+             (+ a b)))))
 
 (deftest later-bindings-see-earlier
-  (is (match? 6 (when-let* [a 2
-                            b (* a 3)]
-                  b))))
+  (is (= 6 (when-let* [a 2
+                       b (* a 3)]
+             b))))
 
 (deftest short-circuits-on-nil
   (let [evaluated? (atom false)]
@@ -41,11 +40,11 @@
       (swap! seen conj :one)
       (swap! seen conj :two)
       :result)
-    (is (match? [:one :two] @seen))))
+    (is (= [:one :two] @seen))))
 
 (deftest destructuring-lhs
-  (is (match? 3 (when-let* [{:keys [x y]} {:x 1 :y 2}]
-                  (+ x y)))))
+  (is (= 3 (when-let* [{:keys [x y]} {:x 1 :y 2}]
+             (+ x y)))))
 
 (deftest uneven-bindings-throws
   (testing "an odd number of binding forms is rejected at macroexpansion"

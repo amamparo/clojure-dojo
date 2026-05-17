@@ -1,6 +1,5 @@
 (ns katas.kata-07-roman-numerals-test
   (:require [clojure.test :refer [deftest is testing]]
-            [matcher-combinators.test]
             [katas.kata-07-roman-numerals :refer [int->roman roman->int]]))
 
 (def cases
@@ -30,11 +29,11 @@
 
 (deftest int->roman-test
   (doseq [[n s] cases]
-    (is (match? s (int->roman n)) (str "n=" n))))
+    (is (= s (int->roman n)) (str "n=" n))))
 
 (deftest roman->int-test
   (doseq [[n s] cases]
-    (is (match? n (roman->int s)) (str "s=" s))))
+    (is (= n (roman->int s)) (str "s=" s))))
 
 (deftest round-trip
   (testing "every value in 1..3999 round-trips"

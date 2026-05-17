@@ -1,29 +1,27 @@
 (ns katas.kata-06-game-of-life-test
   (:require [clojure.test :refer [deftest is testing]]
-            [matcher-combinators.test]
-            [matcher-combinators.matchers :as m]
             [katas.kata-06-game-of-life :refer [step]]))
 
 (deftest empty-world
-  (is (match? (m/equals #{}) (step #{}))))
+  (is (= #{} (step #{}))))
 
 (deftest single-cell-dies
   (testing "a lone cell dies of underpopulation"
-    (is (match? (m/equals #{}) (step #{[0 0]})))))
+    (is (= #{} (step #{[0 0]})))))
 
 (deftest pair-dies
   (testing "two cells with no other neighbours both die"
-    (is (match? (m/equals #{}) (step #{[0 0] [1 0]})))))
+    (is (= #{} (step #{[0 0] [1 0]})))))
 
 (deftest block-is-still-life
   (let [block #{[0 0] [1 0] [0 1] [1 1]}]
-    (is (match? (m/equals block) (step block)))))
+    (is (= block (step block)))))
 
 (deftest blinker-oscillates
   (let [horiz #{[0 0] [1 0] [2 0]}
         vert  #{[1 -1] [1 0] [1 1]}]
-    (is (match? (m/equals vert)  (step horiz)))
-    (is (match? (m/equals horiz) (step vert)))))
+    (is (= vert  (step horiz)))
+    (is (= horiz (step vert)))))
 
 (deftest birth-with-three-neighbours
   (testing "a dead cell with exactly 3 live neighbours is born"
@@ -41,5 +39,5 @@
   (testing "shifting the world by a fixed offset shifts the result"
     (let [blinker #{[0 0] [1 0] [2 0]}
           shift   (fn [s [dx dy]] (set (map (fn [[x y]] [(+ x dx) (+ y dy)]) s)))]
-      (is (match? (m/equals (shift (step blinker) [10 -3]))
-                  (step (shift blinker [10 -3])))))))
+      (is (= (shift (step blinker) [10 -3])
+             (step (shift blinker [10 -3])))))))
