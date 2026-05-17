@@ -557,23 +557,11 @@ Until now everything has been pure; real systems hold state. Clojure separates t
 
 You almost never define a custom exception class in Clojure. `ex-info` carries arbitrary data; the consumer matches on `(:type (ex-data e))`.
 
-A note on the test files. Most of the suite uses `(is (= expected actual))` — plain equality, the workhorse. K9 (and K15) also use `(is (match? ...))` and `(is (thrown-match? ex-class data-shape ...))`. Those come from the **matcher-combinators** library; `match?` on a map matches *partially* — extra keys in the actual value are fine. That's useful for asserting on `ex-data` (which often carries more than the test needs) and for the history vector (which may grow new fields over time without breaking the test). Plain `=` requires exact equality. Use whichever expresses what you actually mean.
+A note on the test files. Most of the suite uses `(is (= expected actual))` — plain equality, the workhorse. A few tests also use `(is (match? ...))` and `(is (thrown-match? ex-class data-shape ...))`. Those come from the **matcher-combinators** library; `match?` on a map matches *partially* — extra keys in the actual value are fine. That's useful for asserting on `ex-data` (which often carries more than the test needs) and for the history vector (which may grow new fields over time without breaking the test). Plain `=` requires exact equality. Use whichever expresses what you actually mean.
 
 
 
-> ## Complete kata 9 ("bank account") before continuing
-
-
-
-You now have a fold (`reduce`), state in a map, and structured errors (`ex-info`). A couple more katas before §19 introduces a new idea.
-
-
-
-> ## Complete kata 10 ("assignments") before continuing
-
-
-
-> ## Complete kata 11 ("my-memoize") before continuing
+> ## Complete katas 9 ("bank account"), 10 ("assignments"), and 11 ("my-memoize") before continuing
 
 
 
@@ -735,7 +723,7 @@ By the time you sit down with Kata 15, you have everything. A tree-walking inter
 
 One thing worth stating up front, because it's a definition not a hint: in `let`, bindings extend the environment that the body sees. Each binding is visible to every subsequent binding *and* to the body. The shadow doesn't leak — the extended env exists only inside the `let` form.
 
-A second one, because the atom from kata 9 returns: `def` needs to extend the env beyond a single form. The simplest way to model this is to let the top-level env be an atom (and plain maps for nested scopes inside `let`/`fn` bodies), so `def` can `swap!` into it. Closures then capture the env reference, which means a function defined via `def` will see future `def`s — that's how recursion through `def` works.
+A second one: `def` needs to extend the env beyond a single form. The simplest way to model this is to let the top-level env be an atom (and plain maps for nested scopes inside `let`/`fn` bodies), so `def` can `swap!` into it. Closures then capture the env reference, which means a function defined via `def` will see future `def`s — that's how recursion through `def` works.
 
 Everything else falls out of the techniques from the prior katas. Trust them.
 
@@ -747,7 +735,9 @@ Everything else falls out of the techniques from the prior katas. Trust them.
 
 ## Going further
 
-- **clojure.core** has ~600 functions; you won't need most of them.
-- **Joy of Clojure** (Fogus & Houser) or **Programming Clojure** (Halloway & Bedra) when you want a book.
+- **[Clojure cheatsheet](https://clojure.org/api/cheatsheet)** — every core function on one page, grouped by what they operate on. (You won't need most of them.) **[clojuredocs.org](https://clojuredocs.org)** has community-contributed examples for each.
+- **Joy of Clojure** (Fogus & Houser) or **Programming Clojure** (Miller, Halloway & Bedra) when you want a book.
+- Rich Hickey's talks — "Simple Made Easy", "The Value of Values", "Hammock Driven Development" — for the reasons the language is shaped the way it is.
+- **[4ever-clojure](https://4clojure.oxal.org/)** when you want more problems.
 
 It will feel slow for the first few weeks. That's normal; fluency comes before speed.
