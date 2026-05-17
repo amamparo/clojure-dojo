@@ -12,19 +12,7 @@ You're on a host with a deep library ecosystem; interop is one character of synt
 
 
 
-## 1. REPL-driven development
-
-In most languages a REPL is an afterthought — a scratch console you rarely open. In Clojure it is first-class. It is *how you work*: you keep one running and build the program inside it.
-
-So: start a REPL, connect your editor to it, and leave it running. As you write code, send each form to it — a function, an expression to try that function, a test. It takes effect immediately in the running program, and you see the result at once. Change it, send it again. Definitions and state accumulate; you rarely restart or reload a whole file.
-
-The REPL is also where you look things up — `(doc f)`, `(source f)`, `(apropos "...")` — and where you keep throwaway experiments, in a `(comment ...)` block that is ignored on load.
-
-This is the Clojure workflow, not a nicety. If it is new to you, getting fluent in it is as much the point of this repo as the katas.
-
-
-
-## 2. Syntax — the whole language in 5 minutes
+## 1. Syntax — the whole language in 5 minutes
 
 Everything is a prefix-form expression in parentheses:
 
@@ -58,7 +46,7 @@ Note `[x]` — argument lists are *vectors*, not parenthesised. This is one of t
 
 
 
-## 3. The built-in data types
+## 2. The built-in data types
 
 | Type | Literal | Notes |
 |---|---|---|
@@ -87,7 +75,7 @@ That last trick — keyword-as-function — is everywhere in idiomatic Clojure. 
 
 
 
-## 4. Control flow
+## 3. Control flow
 
 `if` is an *expression*, not a statement. It returns the chosen branch's value. There is no `return`; the last expression in any form is its value.
 
@@ -123,7 +111,7 @@ That last trick — keyword-as-function — is everywhere in idiomatic Clojure. 
 
 
 
-## 5. `let` and destructuring
+## 4. `let` and destructuring
 
 `let` introduces local bindings. Bindings are sequential — each can see the previous:
 
@@ -155,7 +143,7 @@ Destructuring also works in function parameters, which is how you "name" map key
 
 
 
-## 6. Functions in depth
+## 5. Functions in depth
 
 Multi-arity (overloading by argument count):
 
@@ -188,7 +176,7 @@ Functions are values: pass them, return them, store them. This will feel like th
 
 
 
-## 7. Sequences — `map`, `filter`, `reduce`
+## 6. Sequences — `map`, `filter`, `reduce`
 
 The seq abstraction is Clojure's iterator protocol. Almost every collection can be viewed as a seq, and the core sequence functions work on all of them uniformly.
 
@@ -226,7 +214,7 @@ The seq abstraction is Clojure's iterator protocol. Almost every collection can 
 
 
 
-## 8. Threading macros
+## 7. Threading macros
 
 Reading nested expressions inside-out is painful. The threading macros invert that.
 
@@ -256,7 +244,7 @@ Rule of thumb: data-shaped operations (`assoc`, `update`, host method calls) go 
 
 
 
-## 9. Working with maps
+## 8. Working with maps
 
 Maps are the workhorse data structure. Learn these cold:
 
@@ -295,7 +283,7 @@ Maps are the workhorse data structure. Learn these cold:
 
 
 
-## 10. Namespaces and `clojure.string`
+## 9. Namespaces and `clojure.string`
 
 A namespace is a unit of code. The first form in every file declares it and any imports:
 
@@ -312,7 +300,7 @@ Use `clojure.string/...` for string ops, not host interop, unless interop is cle
 
 
 
-## 11. Sorting
+## 10. Sorting
 
 ```clojure
 (sort [3 1 2])                       ; => (1 2 3)
@@ -345,7 +333,7 @@ Custom comparators: a 2-arg fn returning negative/zero/positive, or a 2-arg pred
 
 
 
-## 12. `group-by`
+## 11. `group-by`
 
 ```clojure
 (group-by odd? [1 2 3 4 5])
@@ -363,7 +351,7 @@ The pattern: pick a *canonical form* (a key function), let `group-by` bucket thi
 
 
 
-## 13. More sequence operations
+## 12. More sequence operations
 
 ```clojure
 (partition 3 [1 2 3 4 5 6])         ; => ((1 2 3) (4 5 6))
@@ -387,7 +375,7 @@ The pattern: pick a *canonical form* (a key function), let `group-by` bucket thi
 
 
 
-## 14. Laziness in earnest
+## 13. Laziness in earnest
 
 You've been using lazy seqs (everything `map`/`filter`/`range` produces). Now you'll *build* one.
 
@@ -431,7 +419,7 @@ Two caveats with lazy seqs:
 
 
 
-## 15. Sets — both predicate and data
+## 14. Sets — both predicate and data
 
 Sets as predicates (the most underrated idiom):
 
@@ -457,7 +445,7 @@ Set operations live in `clojure.set`:
 
 
 
-## 16. Recursion — `loop`/`recur`
+## 15. Recursion — `loop`/`recur`
 
 The host doesn't optimise tail calls automatically. Clojure exposes them via the explicit `recur` form, which jumps back to an enclosing `loop` or function with new bindings:
 
@@ -480,7 +468,7 @@ For most problems, prefer `reduce` or a higher-order function over hand-rolled `
 
 
 
-## 17. Recursion — state machines
+## 16. Recursion — state machines
 
 Some loops aren't a fold: the next move depends on what was just consumed — a *state machine*. The defining property is **variable lookahead** — depending on what you see, you consume one item, or two, or three.
 
@@ -517,7 +505,7 @@ The same shape shows up whenever the parsing rule depends on the current token �
 
 
 
-## 18. Identity vs value — atoms, `ex-info`
+## 17. Identity vs value — atoms, `ex-info`
 
 Until now everything has been pure; real systems hold state. Clojure separates the two: a *value* is immutable; an *identity* — a thing that holds different values over time — is an explicit reference you `deref`.
 
@@ -565,7 +553,7 @@ A note on the test files. Most of the suite uses `(is (= expected actual))` — 
 
 
 
-## 19. Dispatch — maps of functions
+## 18. Dispatch — maps of functions
 
 Before reaching for the heavy polymorphism tools, notice that a map of functions is often all you need:
 
@@ -609,7 +597,7 @@ When the inputs are strings but your dispatch table uses symbols (or vice versa)
 
 
 
-## 20. Real polymorphism — protocols, records, multimethods
+## 19. Real polymorphism — protocols, records, multimethods
 
 Two complementary tools. Both are open in different axes.
 
@@ -655,7 +643,7 @@ A `defrecord` generates a `->Circle` positional constructor and a `map->Circle` 
 
 
 
-## 21. Macros — code as data, finally cashed in
+## 20. Macros — code as data, finally cashed in
 
 A macro is a function that runs at *compile time* and returns a form to be compiled in its place. Because Clojure source is just nested lists, that "form" is a regular Clojure data structure you build with regular Clojure code.
 
@@ -711,7 +699,7 @@ When a macro takes a *structured* input — a bindings vector, a pair-list, a ne
 
 
 
-## 22. The capstone — writing an interpreter
+## 21. The capstone — writing an interpreter
 
 By the time you sit down with Kata 15, you have everything. A tree-walking interpreter for a Lisp-y language is a perfect closer because:
 

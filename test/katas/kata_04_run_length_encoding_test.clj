@@ -1,5 +1,5 @@
 (ns katas.kata-04-run-length-encoding-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [clojure.test :refer [deftest is]]
             [katas.kata-04-run-length-encoding :refer [encode decode]]))
 
 (deftest encode-empty

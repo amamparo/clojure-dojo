@@ -7,26 +7,43 @@ them pass.
 
 ## The discipline
 
-You solve the katas yourself. The REPL is your reference —
-`(doc f)`, `(source f)`, `(apropos "...")` — and
-[SENSEI.md](SENSEI.md) is the only text you need. No Google, no
-clojuredocs, no LLM tab-completing your way to green. The point is to
-finish with the language in your fingers, not in your bookmarks.
+You solve the katas yourself. [SENSEI.md](SENSEI.md) is the only text
+you need. No Google, no clojuredocs, no LLM tab-completing your way to
+green. The point is to finish with the language in your fingers, not in
+your bookmarks.
 
 ## Setup
 
-You need:
+This repo is driven by `just` — tests, linting, and formatting are all
+`just` recipes (see [Tasks](#tasks)). You need:
 
-- a JDK — [Adoptium Temurin install guide](https://adoptium.net/installation/)
+- a [JDK](https://adoptium.net/installation/)
 - the [Clojure CLI](https://clojure.org/guides/install_clojure)
+- [`just`](https://github.com/casey/just#installation)
 
-With those installed, start a REPL from the project directory:
+Then, from the project directory:
 
 ```sh
-clj -A:test
+just test                 # every test
+just test 1               # every test for kata 1
+just test 1 some-test     # one test by name, in kata 1
 ```
 
-From there the REPL says what to run, and SENSEI says where to go next.
+Tests are red until you solve the stubs in `src/katas`; SENSEI says
+where to go next.
+
+## Tasks
+
+| command | what |
+|---------|------|
+| `just test [k [name]]` | run tests — all, kata `k`, or one named |
+| `just lint` | clj-kondo over `src` and `test` |
+| `just format` | check formatting (cljfmt; no changes) |
+| `just fix` | reformat `src` and `test` in place (cljfmt) |
+| `just check` | `format` then `test` (fail-fast) |
+
+A fresh clone lints clean and is formatted; tests are red until you
+solve the stubs.
 
 ## Katas
 
