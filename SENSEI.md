@@ -42,7 +42,7 @@ Note `[x]` — argument lists are *vectors*, not parenthesised. This is one of t
 - `#_form` skip the next form entirely — useful for "comment out this expression"
 - `(comment ...)` block of forms ignored when loaded; runnable in the REPL
 
-**Truthiness:** `nil` and `false` are falsy. Everything else is truthy — including `0`, `""`, and empty collections. This is one of the most common bug sources for newcomers.
+> ⚠️ **Gotcha — Truthiness.** `nil` and `false` are the *only* falsy values. Everything else is truthy — including `0`, `""`, `[]`, and `{}` (an empty collection is **not** falsy; use `(seq coll)` or `empty?` to test emptiness). This is one of the most common bug sources for newcomers.
 
 
 
@@ -59,7 +59,7 @@ Note `[x]` — argument lists are *vectors*, not parenthesised. This is one of t
 | Boolean | `true`, `false` | |
 | Nil | `nil` | absence of a value |
 | Keyword | `:foo`, `:user/name` | interned, == in O(1); used as map keys and "constants" |
-| Symbol | `'foo` | names that refer to vars; `'` quotes them |
+| Symbol | `'foo` | a name. Bare, it's looked up — evaluates to whatever it refers to (usually a var's value). `'foo` quotes it, yielding the name itself as data |
 | Vector | `[1 2 3]` | indexed access, conj appends to end |
 | List | `'(1 2 3)` | linked list, conj prepends; quoted because `(1 2 3)` would try to call `1` |
 | Map | `{:a 1, :b 2}` | hash-map; keys can be any value |
@@ -206,11 +206,11 @@ The seq abstraction is Clojure's iterator protocol. Almost every collection can 
 (into {} [[:a 1] [:b 2]])         ; => {:a 1, :b 2}
 ```
 
-**Sequences are lazy by default.** `(map f xs)` returns a lazy seq; nothing is computed until something pulls on it. This is mostly invisible until you do I/O inside a `map`, at which point you'll be confused why nothing happened. Force with `doall`, or use `mapv` / `filterv` for eager vectors.
+> ⚠️ **Gotcha — Laziness is invisible until it bites.** `(map f xs)` returns a lazy seq; nothing is computed until something pulls on it. You won't notice until you do I/O (a `println`, a DB write) inside a `map` and are confused why *nothing happened*. Force realisation with `doall`, or use `mapv` / `filterv` for eager vectors.
 
 
 
-> ## Complete kata 1 ("FizzBuzz") before continuing
+> ## 🥋 Complete kata 1 ("FizzBuzz") before continuing
 
 
 
@@ -329,7 +329,7 @@ Custom comparators: a 2-arg fn returning negative/zero/positive, or a 2-arg pred
 
 
 
-> ## Complete kata 2 ("word frequencies") before continuing
+> ## 🥋 Complete kata 2 ("word frequencies") before continuing
 
 
 
@@ -347,7 +347,7 @@ The pattern: pick a *canonical form* (a key function), let `group-by` bucket thi
 
 
 
-> ## Complete kata 3 ("anagrams") before continuing
+> ## 🥋 Complete kata 3 ("anagrams") before continuing
 
 
 
@@ -371,7 +371,7 @@ The pattern: pick a *canonical form* (a key function), let `group-by` bucket thi
 
 
 
-> ## Complete kata 4 ("RLE") before continuing
+> ## 🥋 Complete kata 4 ("RLE") before continuing
 
 
 
@@ -415,7 +415,7 @@ Two caveats with lazy seqs:
 
 
 
-> ## Complete kata 5 ("primes") before continuing
+> ## 🥋 Complete kata 5 ("primes") before continuing
 
 
 
@@ -441,7 +441,7 @@ Set operations live in `clojure.set`:
 
 
 
-> ## Complete kata 6 ("Game of Life") before continuing
+> ## 🥋 Complete kata 6 ("Game of Life") before continuing
 
 
 
@@ -464,7 +464,7 @@ For most problems, prefer `reduce` or a higher-order function over hand-rolled `
 
 
 
-> ## Complete kata 7 ("Roman numerals") before continuing
+> ## 🥋 Complete kata 7 ("Roman numerals") before continuing
 
 
 
@@ -501,7 +501,7 @@ The same shape shows up whenever the parsing rule depends on the current token �
 
 
 
-> ## Complete kata 8 ("bowling") before continuing
+> ## 🥋 Complete kata 8 ("bowling") before continuing
 
 
 
@@ -519,7 +519,7 @@ Until now everything has been pure; real systems hold state. Clojure separates t
 (reset! counter 100)       ; replace unconditionally
 ```
 
-`swap!` is *retried* under contention — the function you pass can run more than once. That's why it must be pure: no I/O, no side effects, no `reset!`-after-`deref`. Read+update happens *inside* the swap function, atomically.
+> ⚠️ **Gotcha — `swap!` is retried.** The function you pass to `swap!` can run **more than once** (it's retried under contention). It must therefore be pure: no I/O, no side effects, no `reset!`-after-`deref`. Read+update happens *inside* the swap function, atomically.
 
 ```clojure
 ;; WRONG — read and write are separate steps
@@ -549,7 +549,7 @@ A note on the test files. Most of the suite uses `(is (= expected actual))` — 
 
 
 
-> ## Complete katas 9 ("bank account"), 10 ("assignments"), and 11 ("my-memoize") before continuing
+> ## 🥋 Complete katas 9 ("bank account"), 10 ("assignments"), and 11 ("my-memoize") before continuing
 
 
 
@@ -593,7 +593,7 @@ When the inputs are strings but your dispatch table uses symbols (or vice versa)
 
 
 
-> ## Complete kata 12 ("RPN") before continuing
+> ## 🥋 Complete kata 12 ("RPN") before continuing
 
 
 
@@ -639,7 +639,7 @@ A `defrecord` generates a `->Circle` positional constructor and a `map->Circle` 
 
 
 
-> ## Complete kata 13 ("shapes") before continuing
+> ## 🥋 Complete kata 13 ("shapes") before continuing
 
 
 
@@ -695,7 +695,7 @@ When a macro takes a *structured* input — a bindings vector, a pair-list, a ne
 
 
 
-> ## Complete kata 14 ("when-let*") before continuing
+> ## 🥋 Complete kata 14 ("when-let*") before continuing
 
 
 
@@ -717,7 +717,7 @@ Everything else falls out of the techniques from the prior katas. Trust them.
 
 
 
-> ## Complete kata 15 ("the interpreter") before continuing
+> ## 🥋 Complete kata 15 ("the interpreter") before continuing
 
 
 
