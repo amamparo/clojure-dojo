@@ -220,7 +220,7 @@ The seq abstraction is Clojure's iterator protocol. Almost every collection can 
 
 **Sequences are lazy by default.** `(map f xs)` returns a lazy seq; nothing is computed until something pulls on it. This is mostly invisible until you do I/O inside a `map`, at which point you'll be confused why nothing happened. Force with `doall`, or use `mapv` / `filterv` for eager vectors.
 
-Solve kata 1 with what you have now — `cond`, `range`, `map`, maybe a function. §8 introduces threading, and you'll come back to refactor. Solving the same problem twice is the point: it's how you'll feel a tool earn its place.
+Solve kata 1 with what you have now. §8 introduces threading, and you'll come back to refactor — solving the same problem twice is how a tool earns its place.
 
 
 
@@ -256,20 +256,7 @@ Rule of thumb: data-shaped operations (`assoc`, `update`, host method calls) go 
 
 `as->` lets you name the intermediate value when neither position fits.
 
-Now go back to kata 1. A nested solution might look like
-
-```clojure
-(map (fn [n] (cond ...)) (range 1 (inc n)))
-```
-
-Rewrite it with `->>`:
-
-```clojure
-(->> (range 1 (inc n))
-     (map (fn [n] (cond ...))))
-```
-
-Same result; the read order flips. Most pipelines you'll write are `->>` — once you have it, you'll reach for it constantly.
+Now go back to kata 1 and rewrite your solution with threading. Whatever shape you wrote first, threading will let you read it top-down instead of inside-out.
 
 
 
