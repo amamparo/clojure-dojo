@@ -220,6 +220,8 @@ The seq abstraction is Clojure's iterator protocol. Almost every collection can 
 
 **Sequences are lazy by default.** `(map f xs)` returns a lazy seq; nothing is computed until something pulls on it. This is mostly invisible until you do I/O inside a `map`, at which point you'll be confused why nothing happened. Force with `doall`, or use `mapv` / `filterv` for eager vectors.
 
+Solve kata 1 with what you have now. §8 introduces threading, and you'll come back to refactor — solving the same problem twice is how a tool earns its place.
+
 
 
 > ## Complete kata 1 ("FizzBuzz") before continuing
@@ -253,6 +255,8 @@ Reading nested expressions inside-out is painful. The threading macros invert th
 Rule of thumb: data-shaped operations (`assoc`, `update`, host method calls) go in `->`; sequence operations go in `->>`. Most Clojure pipelines you'll write are `->>`.
 
 `as->` lets you name the intermediate value when neither position fits.
+
+Now go back to kata 1 and rewrite your solution with threading. Whatever shape you wrote first, threading will let you read it top-down instead of inside-out.
 
 
 
@@ -557,6 +561,8 @@ Until now everything has been pure; real systems hold state. Clojure separates t
 
 You almost never define a custom exception class in Clojure. `ex-info` carries arbitrary data; the consumer matches on `(:type (ex-data e))`.
 
+A note on the test files. Most of the suite uses `(is (= expected actual))` — plain equality, the workhorse. K9 (and K14) also use `(is (match? ...))` and `(is (thrown-match? ex-class data-shape ...))`. Those come from the **matcher-combinators** library; `match?` on a map matches *partially* — extra keys in the actual value are fine. That's useful for asserting on `ex-data` (which often carries more than the test needs) and for the history vector (which may grow new fields over time without breaking the test). Plain `=` requires exact equality. Use whichever expresses what you actually mean.
+
 
 
 > ## Complete kata 9 ("bank account") before continuing
@@ -653,6 +659,8 @@ A `defrecord` generates a `->Circle` positional constructor and a `map->Circle` 
 - All implementations cluster around a *behaviour* and the dispatch key isn't a host type? Multimethod.
 - Hierarchical dispatch (`derive`/`isa?`)? Only multimethods.
 
+**One important caveat** — most Clojure code, most of the time, uses plain maps and never reaches for `defrecord`. Maps compose with the whole standard library, can grow new fields without breaking callers, survive REPL reloads, and don't need a positional constructor. Reach for a record when you actually need (a) protocol dispatch tied to a named type, or (b) measured performance from typed field access. Kata 12 introduces records because protocols are records' canonical implementation type and you should have seen the tool. You will not reach for it often.
+
 
 
 > ## Complete kata 12 ("shapes") before continuing
@@ -726,6 +734,8 @@ By the time you sit down with Kata 14, you have everything. A tree-walking inter
 - The special forms you need (`if`, `let`, `do`, `def`, `fn`) are each a few lines of recursive evaluation.
 
 One thing worth stating up front, because it's a definition not a hint: in `let`, bindings extend the environment that the body sees. Each binding is visible to every subsequent binding *and* to the body. The shadow doesn't leak — the extended env exists only inside the `let` form.
+
+A second one, because the atom from kata 9 returns: `def` needs to extend the env beyond a single form. The simplest way to model this is to let the top-level env be an atom (and plain maps for nested scopes inside `let`/`fn` bodies), so `def` can `swap!` into it. Closures then capture the env reference, which means a function defined via `def` will see future `def`s — that's how recursion through `def` works.
 
 Everything else falls out of the techniques from the prior katas. Trust them.
 

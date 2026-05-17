@@ -1,26 +1,24 @@
 (ns katas.kata-12-shapes)
 
-;; ─── Kata 12: Shapes ───────────────────────────────────────────────────────
+;; ─── Kata 12: Shapes ──────────────────────────────────────
 ;;
-;; ── Part A: protocol & records ──────────────────────────────────────────
+;; ── Part A: protocol & records ──────────────────────────────
 ;;
 ;; The `Shape` protocol has two methods: `area` and `perimeter`.
-;; Implement records `Circle`, `Rectangle`, `RightTriangle`, and `Square`
-;; that satisfy it.
+;; Implement records `Circle` and `Rectangle` that satisfy it.
 ;;
 ;;   (area      (->Circle 1))           ; => Math/PI         (≈ 3.14159…)
 ;;   (perimeter (->Circle 1))           ; => (* 2 Math/PI)
 ;;   (area      (->Rectangle 3 4))      ; => 12
 ;;   (perimeter (->Rectangle 3 4))      ; => 14
-;;   (area      (->RightTriangle 3 4))  ; => 6
-;;   (perimeter (->RightTriangle 3 4))  ; => 12   (3 + 4 + 5)
-;;   (area      (->Square 4))           ; => 16
-;;   (perimeter (->Square 4))           ; => 16
 ;;
-;; ── Part B: multimethod ────────────────────────────────────────────────
+;; ── Part B: multimethod ────────────────────────────────────
 ;;
 ;; `describe` dispatches on a shape map's `:kind` key and returns a short
-;; human-readable string.
+;; human-readable string. Implement it for four shapes — circle, rectangle,
+;; triangle, square — plus a default for unknown :kinds. Notice that the
+;; multimethod axis covers four shapes; the protocol axis above covers two.
+;; That asymmetry is the point of this kata.
 ;;
 ;;   (describe {:kind :circle    :r 2})       ; => "circle with radius 2"
 ;;   (describe {:kind :rectangle :w 3 :h 4})  ; => "rectangle 3 by 4"
@@ -28,15 +26,19 @@
 ;;   (describe {:kind :square    :s 4})       ; => "square with side 4"
 ;;   (describe {:kind :pentagon})             ; => "unknown shape: :pentagon"
 ;;
-;; ── Reflection ───────────────────────────────────────────────────────────
+;; ── Reflection ──────────────────────────────────────────
 ;;
-;; Notice: a protocol groups all behaviours of one TYPE together (closed
-;; set of methods, open set of types). A multimethod groups all
-;; implementations of one BEHAVIOUR together (open set of methods AND
-;; types). Reach for whichever axis you expect to extend.
+;; A protocol groups all behaviours of one TYPE together (closed set of
+;; methods, open set of types). A multimethod groups all implementations
+;; of one BEHAVIOUR together (open set of methods AND types). To add a
+;; new shape on the protocol axis you would define a whole new record; to
+;; add one on the multimethod axis you only add a `defmethod`. That
+;; asymmetry is the practical difference between the two tools.
 ;;
-;; Pay attention to what it took to add Square — on the protocol axis
-;; vs. on the multimethod axis. That contrast is the lesson.
+;; In production Clojure code you will reach for plain maps far more often
+;; than for `defrecord` — see SENSEI §20. This kata introduces records
+;; because protocols are records' canonical implementation type, and you
+;; should have seen the tool.
 
 (defprotocol Shape
   (area [shape])
@@ -52,24 +54,6 @@
     ))
 
 (defrecord Rectangle [w h]
-  Shape
-  (area [_]
-    ;; TODO
-    )
-  (perimeter [_]
-    ;; TODO
-    ))
-
-(defrecord RightTriangle [a b]
-  Shape
-  (area [_]
-    ;; TODO
-    )
-  (perimeter [_]
-    ;; TODO
-    ))
-
-(defrecord Square [s]
   Shape
   (area [_]
     ;; TODO

@@ -1,6 +1,5 @@
 (ns katas.kata-03-anagrams-test
   (:require [clojure.test :refer [deftest is testing]]
-            [matcher-combinators.test]
             [katas.kata-03-anagrams :refer [anagrams? group-anagrams]]))
 
 (deftest anagrams?-true-cases
@@ -18,21 +17,21 @@
   (is (not (anagrams? "aab" "abb"))))
 
 (deftest group-anagrams-empty
-  (is (match? [] (group-anagrams []))))
+  (is (= [] (group-anagrams []))))
 
 (deftest group-anagrams-singletons
-  (is (match? [["a"] ["b"] ["c"]]
-              (group-anagrams ["a" "b" "c"]))))
+  (is (= [["a"] ["b"] ["c"]]
+         (group-anagrams ["a" "b" "c"]))))
 
 (deftest group-anagrams-mixed
-  (is (match? [["eat" "tea" "ate"] ["tan" "nat"] ["bat"]]
-              (group-anagrams ["eat" "tea" "tan" "ate" "nat" "bat"]))))
+  (is (= [["eat" "tea" "ate"] ["tan" "nat"] ["bat"]]
+         (group-anagrams ["eat" "tea" "tan" "ate" "nat" "bat"]))))
 
 (deftest group-anagrams-preserves-group-order
   (testing "groups appear in the order their first member appears"
-    (is (match? [["bat"] ["eat" "tea"] ["tan" "nat"]]
-                (group-anagrams ["bat" "eat" "tea" "tan" "nat"])))))
+    (is (= [["bat"] ["eat" "tea"] ["tan" "nat"]]
+           (group-anagrams ["bat" "eat" "tea" "tan" "nat"])))))
 
 (deftest group-anagrams-preserves-within-group-order
-  (is (match? [["abc" "cba" "bac"]]
-              (group-anagrams ["abc" "cba" "bac"]))))
+  (is (= [["abc" "cba" "bac"]]
+         (group-anagrams ["abc" "cba" "bac"]))))
