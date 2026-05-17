@@ -557,19 +557,11 @@ Until now everything has been pure; real systems hold state. Clojure separates t
 
 You almost never define a custom exception class in Clojure. `ex-info` carries arbitrary data; the consumer matches on `(:type (ex-data e))`.
 
-A note on the test files. Most of the suite uses `(is (= expected actual))` — plain equality, the workhorse. K9 (and K15) also use `(is (match? ...))` and `(is (thrown-match? ex-class data-shape ...))`. Those come from the **matcher-combinators** library; `match?` on a map matches *partially* — extra keys in the actual value are fine. That's useful for asserting on `ex-data` (which often carries more than the test needs) and for the history vector (which may grow new fields over time without breaking the test). Plain `=` requires exact equality. Use whichever expresses what you actually mean.
+A note on the test files. Most of the suite uses `(is (= expected actual))` — plain equality, the workhorse. A few tests also use `(is (match? ...))` and `(is (thrown-match? ex-class data-shape ...))`. Those come from the **matcher-combinators** library; `match?` on a map matches *partially* — extra keys in the actual value are fine. That's useful for asserting on `ex-data` (which often carries more than the test needs) and for the history vector (which may grow new fields over time without breaking the test). Plain `=` requires exact equality. Use whichever expresses what you actually mean.
 
 
 
-> ## Complete kata 9 ("bank account") before continuing
-
-
-
-> ## Complete kata 10 ("assignments") before continuing
-
-
-
-> ## Complete kata 11 ("my-memoize") before continuing
+> ## Complete katas 9 ("bank account"), 10 ("assignments"), and 11 ("my-memoize") before continuing
 
 
 
@@ -731,7 +723,7 @@ By the time you sit down with Kata 15, you have everything. A tree-walking inter
 
 One thing worth stating up front, because it's a definition not a hint: in `let`, bindings extend the environment that the body sees. Each binding is visible to every subsequent binding *and* to the body. The shadow doesn't leak — the extended env exists only inside the `let` form.
 
-A second one, because the atom from kata 9 returns: `def` needs to extend the env beyond a single form. The simplest way to model this is to let the top-level env be an atom (and plain maps for nested scopes inside `let`/`fn` bodies), so `def` can `swap!` into it. Closures then capture the env reference, which means a function defined via `def` will see future `def`s — that's how recursion through `def` works.
+A second one: `def` needs to extend the env beyond a single form. The simplest way to model this is to let the top-level env be an atom (and plain maps for nested scopes inside `let`/`fn` bodies), so `def` can `swap!` into it. Closures then capture the env reference, which means a function defined via `def` will see future `def`s — that's how recursion through `def` works.
 
 Everything else falls out of the techniques from the prior katas. Trust them.
 
