@@ -12,59 +12,94 @@ When writing or reviewing Clojure here, follow the [Community Clojure Style
 Guide](https://github.com/bbatsov/clojure-style-guide); there is no vendored
 style file in this repo.
 
-The dojo is intentionally offline / self-contained: SENSEI.md plus the REPL
-(`doc`, `source`, `dir`, `apropos`, `find-doc`) and the test suites are the
-only references a learner needs. Don't send the user to clojuredocs or the
-web — point them at the REPL.
+The dojo is intentionally offline / self-contained: SENSEI.md and the test
+suites are the only references a learner needs. Don't send the user to
+clojuredocs or the web.
 
-> **No CLI scaffolding, no prescribed IDE.** This repo deliberately has no
-> `justfile`, `tests.edn`, CLI test runner, or formatter (just a minimal
-> `.clj-kondo/config.edn` for editor analysis); the loop
-> is REPL-driven — SENSEI §1 has the primer. Stale commands
-> (`just test`, `clj -M:test:kaocha`, `clj -T:cljfmt fix`) no longer work;
-> do not resurrect them. No editor or IDE is prescribed — never tell the
-> user to use a specific one.
+> **`just`-driven, no prescribed IDE.** Tasks run through a `justfile`:
+> `just test` (eftest — `## Running tests`), `just lint` (clj-kondo —
+> `## Linting`), `just format` / `just fix` (cljfmt check / rewrite —
+> `## Formatting`), and `just check` (format + test, fail-fast). Backing
+> aliases are in `deps.edn`: `:test`, `:cljfmt`, `:clj-kondo`. The old
+> REPL loop (`clj -A:test`, `dev/user.clj`, `(run k)`) and
+> `clj -M:test:kaocha` are gone — do not resurrect them. No editor or
+> IDE is prescribed — never tell the user to use a specific one.
 
 ## Running tests
 
-Tests are plain `clojure.test` (`deftest`/`is`/`testing`), run **from a
-REPL** — there is no CLI test runner. Start a REPL with `clj -A:test`,
-which auto-loads `dev/user.clj` (`clojure.test` as `t`, and `(run k)` by
-kata number). `clj -M:test` does **not** run tests (`:test`
-has no `:main-opts`). Then:
+Tests are plain `clojure.test` (`deftest`/`is`/`testing`), run through
+the `justfile`:
 
-```clojure
-(run 9)                                          ; whole kata
-(run 9 "history-is-ordered")                     ; one test (string or symbol)
-(t/run-tests 'katas.kata-09-bank-account-test)   ; what (run 9) wraps
+```sh
+just test                       # every test in the repo
+just test 9                     # every test for kata 9
+just test 9 history-is-ordered  # one test by name, in kata 9
 ```
 
-`run-tests` is variadic over required test namespaces. The user's editor
-integration runs the same `clojure.test` calls — whichever editor that is.
+`just test` shells out to `clojure -M:test -m runner`. `test/runner.clj`
+(namespace `runner`) is a small **eftest** entrypoint: `find-tests
+"test"`, filtered by the zero-padded `kata-NN-` namespace tag and
+optionally a `deftest` name, run with eftest's pretty (colored)
+reporter. It exits non-zero if anything fails, so `just test` fails the
+recipe / CI.
 
-If a REPL or editor can't find `clojure.main` or shows an empty classpath,
-the `deps.edn` project wasn't picked up; a plain terminal `clj -A:test`
-always works with a correct Clojure CLI install and is the sanity check.
-Clojure 1.12 is happiest on JDK 21; on much newer JDKs you may hit
-reflective-access or library oddities — try a 21 LTS if so.
+If `clojure` reports an empty classpath or a missing namespace, the
+`deps.edn` project wasn't picked up; running `clojure -M:test -m runner`
+from the project root is the sanity check. Clojure 1.12 is happiest on
+JDK 21; on much newer JDKs you may hit reflective-access or library
+oddities — try a 21 LTS if so.
 
 ## deps.edn
 
-Minimal by design: `:paths ["src" "resources" "dev"]` — `dev` is a **base**
-path (not an alias) so `dev/user.clj`'s `user` namespace is an
-unconditional source root for every editor; `clojure.main` auto-loads the
-`user` namespace, so never rename it and never move `dev` into an alias.
-Clojure 1.12.4, one alias `:test` (`:extra-paths ["test"]`, no `:main-opts`)
-that adds **eftest** for colored test output — dev/test tooling only, never
-used to solve katas. Start the REPL with `clj -A:test`.
+Minimal by design: `:paths ["src" "resources"]`. Clojure 1.12.5, three
+aliases: `:test` (`:extra-paths ["test"]`) adds **eftest** and
+**matcher-combinators** and puts the test sources — including
+`test/runner.clj` — on the classpath, so `clojure -M:test -m runner`
+(what `just test` runs) resolves; `:cljfmt` is the `-T` formatter tool
+alias (`## Formatting`); `:clj-kondo` runs the linter via
+`clojure -M:clj-kondo` (`## Linting`). All are test/tooling only, never
+used to solve katas.
+
+## Formatting
+
+`cljfmt` is wired as the `:cljfmt` `-T` tool alias, scoped to `src test`:
+`clojure -T:cljfmt check` reports formatting drift (`just format`);
+`clojure -T:cljfmt fix` rewrites files in place (`just fix`). Config
+lives in `cljfmt.edn` (auto-discovered): cljfmt's defaults plus
+`:remove-consecutive-blank-lines?` — the rule this was adopted for,
+collapsing runs of blank lines to one — and an `:extra-indents` entry
+teaching it the custom `when-let*` macro (kata 14).
+
+Use `:extra-indents`, never `:indents`, for custom macros: a top-level
+`:indents` key *replaces* cljfmt's built-in indent rules (it then mangles
+every `defn`/`let`), whereas `:extra-indents` merges onto them. Any future
+let-style binding macro a kata introduces needs its own `:extra-indents`
+entry or `fix` will misalign its body. At adoption the whole tree already
+passed `check`.
+
+## Linting
+
+`clj-kondo` is the `:clj-kondo` alias (`:main-opts ["-m"
+"clj-kondo.main"]`, pinned `2026.04.15`). `just lint` runs
+`clojure -M:clj-kondo --lint src test`, reading `.clj-kondo/config.edn`
+(which also backs editor analysis). A fresh clone must lint **clean**:
+"Learning-repo model" explains why the kata stub noise is configured
+out, so a dirty `just lint` is a real finding, not stub noise.
+`just check` gates formatting and tests only — run `just lint`
+separately.
 
 ## Learning-repo model
 
 Katas ship as stubs with `;; TODO` bodies, while the tests are written
 against the intended solution. A freshly-cloned repo therefore has **red
-tests by design** — that is not breakage. Claude's role here is to *review* a
-solution the user wrote, or assist when asked — not to pre-emptively fill in
-stubs.
+tests by design** — that is not breakage. clj-kondo is likewise red on a
+fresh clone (unused params/requires in the stubs, plus an unresolved
+symbol at every `when-let*` call); `.clj-kondo/config.edn` turns
+`:unused-binding`/`:unused-namespace` off for the `katas.*` ns-group and
+`:lint-as`-es `when-let*` to `clojure.core/let`, so a clean clone lints
+clean — don't revert that thinking it's a bug. Claude's role here is to
+*review* a solution the user wrote, or assist when asked — not to
+pre-emptively fill in stubs.
 
 ## Kata file conventions
 

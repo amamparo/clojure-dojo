@@ -1,0 +1,2 @@
+{:remove-consecutive-blank-lines? true
+ :extra-indents {when-let* [[:block 1]]}}
