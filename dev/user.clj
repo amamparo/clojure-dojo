@@ -8,6 +8,7 @@
   "Test vars belonging to kata k (matched on the zero-padded ns name)."
   [k]
   (let [tag (format "kata-%02d-" k)]
+    ;; rescan on every call so katas added mid-session are picked up
     (filter #(str/includes? (str (ns-name (:ns (meta %)))) tag)
             (ef/find-tests "test"))))
 
