@@ -1,6 +1,6 @@
-(ns katas.kata-12-shapes)
+(ns katas.kata-13-shapes)
 
-;; ─── Kata 12: Shapes ──────────────────────────────────────
+;; ─── Kata 13: Shapes ──────────────────────────────────────
 ;;
 ;; ── Part A: protocol & records ──────────────────────────────
 ;;

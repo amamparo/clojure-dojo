@@ -220,8 +220,6 @@ The seq abstraction is Clojure's iterator protocol. Almost every collection can 
 
 **Sequences are lazy by default.** `(map f xs)` returns a lazy seq; nothing is computed until something pulls on it. This is mostly invisible until you do I/O inside a `map`, at which point you'll be confused why nothing happened. Force with `doall`, or use `mapv` / `filterv` for eager vectors.
 
-Solve kata 1 with what you have now. §8 introduces threading, and you'll come back to refactor — solving the same problem twice is how a tool earns its place.
-
 
 
 > ## Complete kata 1 ("FizzBuzz") before continuing
@@ -255,8 +253,6 @@ Reading nested expressions inside-out is painful. The threading macros invert th
 Rule of thumb: data-shaped operations (`assoc`, `update`, host method calls) go in `->`; sequence operations go in `->>`. Most Clojure pipelines you'll write are `->>`.
 
 `as->` lets you name the intermediate value when neither position fits.
-
-Now go back to kata 1 and rewrite your solution with threading. Whatever shape you wrote first, threading will let you read it top-down instead of inside-out.
 
 
 
@@ -561,7 +557,7 @@ Until now everything has been pure; real systems hold state. Clojure separates t
 
 You almost never define a custom exception class in Clojure. `ex-info` carries arbitrary data; the consumer matches on `(:type (ex-data e))`.
 
-A note on the test files. Most of the suite uses `(is (= expected actual))` — plain equality, the workhorse. K9 (and K14) also use `(is (match? ...))` and `(is (thrown-match? ex-class data-shape ...))`. Those come from the **matcher-combinators** library; `match?` on a map matches *partially* — extra keys in the actual value are fine. That's useful for asserting on `ex-data` (which often carries more than the test needs) and for the history vector (which may grow new fields over time without breaking the test). Plain `=` requires exact equality. Use whichever expresses what you actually mean.
+A note on the test files. Most of the suite uses `(is (= expected actual))` — plain equality, the workhorse. K9 (and K15) also use `(is (match? ...))` and `(is (thrown-match? ex-class data-shape ...))`. Those come from the **matcher-combinators** library; `match?` on a map matches *partially* — extra keys in the actual value are fine. That's useful for asserting on `ex-data` (which often carries more than the test needs) and for the history vector (which may grow new fields over time without breaking the test). Plain `=` requires exact equality. Use whichever expresses what you actually mean.
 
 
 
@@ -569,11 +565,15 @@ A note on the test files. Most of the suite uses `(is (= expected actual))` — 
 
 
 
-You now have a fold (`reduce`), state in a map, and structured errors (`ex-info`). One more kata before §19 introduces a new idea — a small synthesis of the three.
+You now have a fold (`reduce`), state in a map, and structured errors (`ex-info`). A couple more katas before §19 introduces a new idea.
 
 
 
 > ## Complete kata 10 ("assignments") before continuing
+
+
+
+> ## Complete kata 11 ("my-memoize") before continuing
 
 
 
@@ -617,7 +617,7 @@ When the inputs are strings but your dispatch table uses symbols (or vice versa)
 
 
 
-> ## Complete kata 11 ("RPN") before continuing
+> ## Complete kata 12 ("RPN") before continuing
 
 
 
@@ -659,11 +659,11 @@ A `defrecord` generates a `->Circle` positional constructor and a `map->Circle` 
 - All implementations cluster around a *behaviour* and the dispatch key isn't a host type? Multimethod.
 - Hierarchical dispatch (`derive`/`isa?`)? Only multimethods.
 
-**One important caveat** — most Clojure code, most of the time, uses plain maps and never reaches for `defrecord`. Maps compose with the whole standard library, can grow new fields without breaking callers, survive REPL reloads, and don't need a positional constructor. Reach for a record when you actually need (a) protocol dispatch tied to a named type, or (b) measured performance from typed field access. Kata 12 introduces records because protocols are records' canonical implementation type and you should have seen the tool. You will not reach for it often.
+**One important caveat** — most Clojure code, most of the time, uses plain maps and never reaches for `defrecord`. Maps compose with the whole standard library, can grow new fields without breaking callers, survive REPL reloads, and don't need a positional constructor. Reach for a record when you actually need (a) protocol dispatch tied to a named type, or (b) measured performance from typed field access. Kata 13 introduces records because protocols are records' canonical implementation type and you should have seen the tool. You will not reach for it often.
 
 
 
-> ## Complete kata 12 ("shapes") before continuing
+> ## Complete kata 13 ("shapes") before continuing
 
 
 
@@ -719,13 +719,13 @@ When a macro takes a *structured* input — a bindings vector, a pair-list, a ne
 
 
 
-> ## Complete kata 13 ("when-let*") before continuing
+> ## Complete kata 14 ("when-let*") before continuing
 
 
 
 ## 22. The capstone — writing an interpreter
 
-By the time you sit down with Kata 14, you have everything. A tree-walking interpreter for a Lisp-y language is a perfect closer because:
+By the time you sit down with Kata 15, you have everything. A tree-walking interpreter for a Lisp-y language is a perfect closer because:
 
 - Source code is already a Clojure data structure — no parser needed.
 - Self-evaluating values are obvious — numbers, strings, keywords return themselves.
@@ -741,7 +741,7 @@ Everything else falls out of the techniques from the prior katas. Trust them.
 
 
 
-> ## Complete kata 14 ("the interpreter") before continuing
+> ## Complete kata 15 ("the interpreter") before continuing
 
 
 

@@ -1,6 +1,6 @@
-(ns katas.kata-14-interpreter)
+(ns katas.kata-15-interpreter)
 
-;; ─── Kata 14: Tiny interpreter ───────────────────────────────
+;; ─── Kata 15: Tiny interpreter ─────────────────────────────────────
 ;;
 ;; Capstone: a small expression interpreter that puts together everything
 ;; from the previous katas. Source is already a Clojure data structure,

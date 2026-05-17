@@ -1,7 +1,7 @@
-(ns katas.kata-12-shapes-test
+(ns katas.kata-13-shapes-test
   (:require [clojure.string :as str]
             [clojure.test :refer [deftest is testing]]
-            [katas.kata-12-shapes
+            [katas.kata-13-shapes
              :refer [Shape area perimeter describe
                      ->Circle ->Rectangle]]))
 

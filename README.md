@@ -43,10 +43,11 @@ list below is for orientation only.
 8. [Bowling](src/katas/kata_08_bowling.clj)
 9. [Bank account](src/katas/kata_09_bank_account.clj)
 10. [Assignments](src/katas/kata_10_assignments.clj)
-11. [RPN](src/katas/kata_11_rpn.clj)
-12. [Shapes](src/katas/kata_12_shapes.clj)
-13. [when-let\*](src/katas/kata_13_when_let_star.clj)
-14. [Tiny interpreter](src/katas/kata_14_interpreter.clj)
+11. [my-memoize](src/katas/kata_11_memoize.clj)
+12. [RPN](src/katas/kata_12_rpn.clj)
+13. [Shapes](src/katas/kata_13_shapes.clj)
+14. [when-let\*](src/katas/kata_14_when_let_star.clj)
+15. [Tiny interpreter](src/katas/kata_15_interpreter.clj)
 
 ## License
 

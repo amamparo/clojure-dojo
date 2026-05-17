@@ -1,6 +1,6 @@
-(ns katas.kata-11-rpn)
+(ns katas.kata-12-rpn)
 
-;; ─── Kata 11: RPN calculator ───────────────────────────────────────────
+;; ─── Kata 12: RPN calculator ──────────────────────────────────
 ;;
 ;; `evaluate` takes a sequence of tokens. Each token is either:
 ;;   - a number (long or double), pushed onto the stack

@@ -1,7 +1,7 @@
-(ns katas.kata-11-rpn-test
+(ns katas.kata-12-rpn-test
   (:require [clojure.test :refer [deftest is testing]]
             [matcher-combinators.test]
-            [katas.kata-11-rpn :refer [evaluate]]))
+            [katas.kata-12-rpn :refer [evaluate]]))
 
 (deftest empty-program
   (is (= [] (evaluate []))))
