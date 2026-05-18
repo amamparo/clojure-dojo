@@ -27,10 +27,10 @@
 ;; Hint: pick a canonical form (e.g. the sorted lower-cased letters) and
 ;; let `group-by` do the heavy lifting.
 
-(defn anagrams? [a b]
-  ;; TODO
-)
+(defn anagrams? [a b])
 
-(defn group-anagrams [strings]
-  ;; TODO
-)
+;; TODO
+
+(defn group-anagrams [strings])
+
+;; TODO
