@@ -38,8 +38,8 @@ where to go next.
 |---------|------|
 | `just test [k [name]]` | run tests — all, kata `k`, or one named |
 | `just lint` | clj-kondo over `src` and `test` |
-| `just format` | check formatting (cljfmt; no changes) |
-| `just fix` | reformat `src` and `test` in place (cljfmt) |
+| `just format` | check formatting (zprint; no changes) |
+| `just fix` | reformat `src` and `test` in place (zprint) |
 | `just check` | `format` then `test` (fail-fast) |
 
 A fresh clone lints clean and is formatted; tests are red until you

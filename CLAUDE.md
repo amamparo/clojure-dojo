@@ -18,15 +18,13 @@ clojuredocs or the web.
 
 > **`just`-driven, no prescribed IDE.** Tasks run through a `justfile`:
 > `just test` (eftest — `## Running tests`), `just lint` (clj-kondo —
-> `## Linting`), `just format` / `just fix` (cljfmt check / rewrite —
-> `## Formatting`), `just check` (format + test, fail-fast), and
-> `just repl` (a plain `clojure -M:test` REPL for experimentation).
-> Backing aliases are in `deps.edn`: `:test`, `:cljfmt`, `:clj-kondo`.
-> The old kata-runner REPL *loop* (`dev/user.clj`, `(run k)`, the
-> `clj -A:test` entrypoint, `clj -M:test:kaocha`) is gone — do not
-> resurrect that mechanism; `just repl` is a bare REPL, not the loop.
-> No editor or IDE is prescribed — never tell the user to use a
-> specific one.
+> `## Linting`), `just format` / `just fix` (zprint check / rewrite —
+> `## Formatting`), and `just check` (format + test, fail-fast).
+> Backing aliases are in `deps.edn`: `:test`, `:zprint`, `:clj-kondo`.
+> The old REPL loop (`clj -A:test`, `dev/user.clj`, `(run k)`) and
+> `clj -M:test:kaocha` are gone — do not resurrect them; there is no
+> `just repl`. No editor or IDE is prescribed — never tell the user
+> to use a specific one.
 
 ## Running tests
 
@@ -58,27 +56,47 @@ Minimal by design: `:paths ["src" "resources"]`. Clojure 1.12.5, three
 aliases: `:test` (`:extra-paths ["test"]`) adds **eftest** and
 **matcher-combinators** and puts the test sources — including
 `test/runner.clj` — on the classpath, so `clojure -M:test -m runner`
-(what `just test` runs) resolves; `:cljfmt` is the `-T` formatter tool
-alias (`## Formatting`); `:clj-kondo` runs the linter via
+(what `just test` runs) resolves; `:zprint` (just the **zprint** dep)
+is the formatter, run via stock `clojure -M:zprint -m zprint.main`
+(`## Formatting`); `:clj-kondo` runs the linter via
 `clojure -M:clj-kondo` (`## Linting`). All are test/tooling only, never
 used to solve katas.
 
 ## Formatting
 
-`cljfmt` is wired as the `:cljfmt` `-T` tool alias, scoped to `src test`:
-`clojure -T:cljfmt check` reports formatting drift (`just format`);
-`clojure -T:cljfmt fix` rewrites files in place (`just fix`). Config
-lives in `cljfmt.edn` (auto-discovered): cljfmt's defaults plus
-`:remove-consecutive-blank-lines?` — the rule this was adopted for,
-collapsing runs of blank lines to one — and an `:extra-indents` entry
-teaching it the custom `when-let*` macro (kata 14).
+`zprint` is the formatter: the `:zprint` alias is just the zprint dep,
+driven through zprint's own CLI. `just format` runs `clojure -M:zprint
+-m zprint.main --url-only file://…/.zprint.edn -sc $(find src test
+-name '*.clj')` (summary check, non-zero exit on drift); `just fix` is
+the same with `-sw` (writes in place). Scope is `src test`.
 
-Use `:extra-indents`, never `:indents`, for custom macros: a top-level
-`:indents` key *replaces* cljfmt's built-in indent rules (it then mangles
-every `defn`/`let`), whereas `:extra-indents` merges onto them. Any future
-let-style binding macro a kata introduces needs its own `:extra-indents`
-entry or `fix` will misalign its body. At adoption the whole tree already
-passed `check`.
+The single source of formatting truth is **`.zprint.edn`** at the repo
+root. zprint.main does not auto-discover a project config (only
+`$HOME/.zprintrc`), so the `justfile` loads it explicitly via
+`--url-only` plus an absolute `file://` URL built from
+`justfile_directory()`. `--url-only` (not `--url`) means a personal
+`~/.zprintrc` is ignored — formatting is deterministic across machines
+and CI. No `cljfmt.edn`, no runner namespace:
+
+- `:style :community` — tracks the bbatsov Community Style Guide.
+- `:width 80` — hard line limit; zprint reflows to fit.
+- `:parse {:interpose "\n\n"}` — forces exactly one blank line between
+  top-level forms (inserts where missing, collapses extras). Replaces
+  the old `:remove-consecutive-blank-lines?` *and* adds separation
+  cljfmt could not.
+- `:fn-map` — `defn`/`defn-`/`defmacro` → `:arg2`, keeping the
+  argument vector on the name line (the conventional Clojure/bbatsov
+  shape, what cljfmt produced); `when-let*` → `:binding` so kata 14's
+  macro indents like `let`. A future let-style binding macro needs its
+  own `:binding` entry or `fix` misaligns its body.
+
+zprint is idempotent here (`fix` then `check` is clean; the whole tree
+passes `check`). With the `:arg2` mapping the shape matches the
+established Clojure/bbatsov style — arglist on the name line, body
+indented — and zprint only reflows lines past `:width`. The one
+residual quirk vs. cljfmt: an empty `;; TODO` stub closes with its
+final `)` at column 0 (see `## Kata file conventions`) — intended,
+not a bug to "fix".
 
 ## Linting
 
@@ -111,7 +129,8 @@ pre-emptively fill in stubs.
   namespace `katas.kata-NN-<slug>-test`. Tests `:refer [...]` the specific
   vars under test (or `:as` alias for wider surfaces — see the bank-account
   kata, `kata_09`).
-- Each stub follows a fixed shape — preserve it when adding new katas:
+- Each stub follows this fixed shape — `just fix` (zprint) enforces it
+  exactly, so don't hand-fight it:
 
   ```clojure
   (ns katas.kata-NN-slug)
@@ -122,7 +141,7 @@ pre-emptively fill in stubs.
 
   (defn name [args]
     ;; TODO
-    )
+  )
   ```
 
 - Kata numbers encode a deliberate complexity / learning progression and are

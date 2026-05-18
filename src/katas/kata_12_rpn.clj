@@ -24,9 +24,11 @@
 ;; Tokens may be passed as either symbols (`'+`) or strings (`"+"`).
 ;;
 ;; Errors (use `ex-info`):
-;;   - operator needs more operands than the stack has → {:type :stack-underflow}
-;;   - unknown token                                   → {:type :unknown-token, :token t}
+;;   - operator needs more operands than the stack has → {:type
+;;   :stack-underflow}
+;;   - unknown token                                   → {:type :unknown-token,
+;;   :token t}
 
 (defn evaluate [tokens]
   ;; TODO
-  )
+)

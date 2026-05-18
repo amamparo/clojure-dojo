@@ -2,8 +2,7 @@
   (:require [clojure.test :refer [deftest is testing]]
             [katas.kata-01-fizzbuzz :refer [fizzbuzz]]))
 
-(deftest empty-input
-  (is (= [] (fizzbuzz 0))))
+(deftest empty-input (is (= [] (fizzbuzz 0))))
 
 (deftest small-cases
   (is (= [1] (fizzbuzz 1)))
@@ -12,8 +11,8 @@
   (is (= [1 2 "Fizz" 4 "Buzz"] (fizzbuzz 5))))
 
 (deftest first-fifteen
-  (is (= [1 2 "Fizz" 4 "Buzz" "Fizz" 7 8 "Fizz" "Buzz"
-          11 "Fizz" 13 14 "FizzBuzz"]
+  (is (= [1 2 "Fizz" 4 "Buzz" "Fizz" 7 8 "Fizz" "Buzz" 11 "Fizz" 13 14
+          "FizzBuzz"]
          (fizzbuzz 15))))
 
 (deftest length-matches
@@ -24,8 +23,7 @@
   (let [out (fizzbuzz 100)
         at #(nth out (dec %))]
     (testing "every multiple of 15 is FizzBuzz"
-      (doseq [i (range 15 101 15)]
-        (is (= "FizzBuzz" (at i)) (str "i=" i))))
+      (doseq [i (range 15 101 15)] (is (= "FizzBuzz" (at i)) (str "i=" i))))
     (testing "multiples of 3 not 5 are Fizz"
       (doseq [i (range 1 101)
               :when (and (zero? (mod i 3)) (pos? (mod i 5)))]

@@ -29,24 +29,23 @@
 ;; do the read+update atomically inside its function, NOT by `deref`-ing
 ;; first and then `reset!`-ing.
 
-(defn open-account
-  ([] (open-account 0))
+(defn open-account ([] (open-account 0))
   ([opening]
    ;; TODO
-   ))
+  ))
 
 (defn balance [acct]
   ;; TODO
-  )
+)
 
 (defn deposit! [acct amount]
   ;; TODO
-  )
+)
 
 (defn withdraw! [acct amount]
   ;; TODO
-  )
+)
 
 (defn history [acct]
   ;; TODO
-  )
+)

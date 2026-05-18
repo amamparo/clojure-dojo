@@ -16,12 +16,10 @@
   (is (not (anagrams? "abc" "ab")))
   (is (not (anagrams? "aab" "abb"))))
 
-(deftest group-anagrams-empty
-  (is (= [] (group-anagrams []))))
+(deftest group-anagrams-empty (is (= [] (group-anagrams []))))
 
 (deftest group-anagrams-singletons
-  (is (= [["a"] ["b"] ["c"]]
-         (group-anagrams ["a" "b" "c"]))))
+  (is (= [["a"] ["b"] ["c"]] (group-anagrams ["a" "b" "c"]))))
 
 (deftest group-anagrams-mixed
   (is (= [["eat" "tea" "ate"] ["tan" "nat"] ["bat"]]
@@ -33,5 +31,4 @@
            (group-anagrams ["bat" "eat" "tea" "tan" "nat"])))))
 
 (deftest group-anagrams-preserves-within-group-order
-  (is (= [["abc" "cba" "bac"]]
-         (group-anagrams ["abc" "cba" "bac"]))))
+  (is (= [["abc" "cba" "bac"]] (group-anagrams ["abc" "cba" "bac"]))))

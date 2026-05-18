@@ -46,20 +46,20 @@
 
 (defrecord Circle [r]
   Shape
-  (area [_]
-    ;; TODO
+    (area [_]
+          ;; TODO
     )
-  (perimeter [_]
-    ;; TODO
+    (perimeter [_]
+               ;; TODO
     ))
 
 (defrecord Rectangle [w h]
   Shape
-  (area [_]
-    ;; TODO
+    (area [_]
+          ;; TODO
     )
-  (perimeter [_]
-    ;; TODO
+    (perimeter [_]
+               ;; TODO
     ))
 
 (defmulti describe :kind)

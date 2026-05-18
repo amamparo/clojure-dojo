@@ -11,13 +11,13 @@ test *args:
 lint:
     clojure -M:clj-kondo --lint src test
 
-# Check formatting without changing files (cljfmt).
+# Check formatting without changing files (zprint; config: .zprint.edn).
 format:
-    clojure -T:cljfmt check
+    clojure -M:zprint -m zprint.main --url-only "file://{{ justfile_directory() }}/.zprint.edn" -sc $(find src test -name '*.clj')
 
-# Reformat src and test in place (cljfmt).
+# Reformat src and test in place (zprint; config: .zprint.edn).
 fix:
-    clojure -T:cljfmt fix
+    clojure -M:zprint -m zprint.main --url-only "file://{{ justfile_directory() }}/.zprint.edn" -sw $(find src test -name '*.clj')
 
 # CI-style gate: formatting check, then the full test suite (fail-fast).
 check: format test

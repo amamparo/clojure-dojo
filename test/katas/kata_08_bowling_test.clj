@@ -2,14 +2,11 @@
   (:require [clojure.test :refer [deftest is testing]]
             [katas.kata-08-bowling :refer [score]]))
 
-(deftest gutter-game
-  (is (= 0 (score (vec (repeat 20 0))))))
+(deftest gutter-game (is (= 0 (score (vec (repeat 20 0))))))
 
-(deftest all-ones
-  (is (= 20 (score (vec (repeat 20 1))))))
+(deftest all-ones (is (= 20 (score (vec (repeat 20 1))))))
 
-(deftest perfect-game
-  (is (= 300 (score (vec (repeat 12 10))))))
+(deftest perfect-game (is (= 300 (score (vec (repeat 12 10))))))
 
 (deftest one-spare-then-bonus
   (testing "frame 1 is a spare; the next roll counts twice"
@@ -27,5 +24,4 @@
 
 (deftest mixed-game
   (testing "the canonical mixed-game test from the bowling kata"
-    (is (= 133
-           (score [1 4 4 5 6 4 5 5 10 0 1 7 3 6 4 10 2 8 6])))))
+    (is (= 133 (score [1 4 4 5 6 4 5 5 10 0 1 7 3 6 4 10 2 8 6])))))

@@ -29,8 +29,8 @@
 
 (defn anagrams? [a b]
   ;; TODO
-  )
+)
 
 (defn group-anagrams [strings]
   ;; TODO
-  )
+)

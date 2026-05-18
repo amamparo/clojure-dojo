@@ -4,7 +4,7 @@
             [katas.kata-09-bank-account :as bank]))
 
 (deftest opening-balance
-  (is (= 0   (bank/balance (bank/open-account))))
+  (is (= 0 (bank/balance (bank/open-account))))
   (is (= 100 (bank/balance (bank/open-account 100)))))
 
 (deftest deposit-and-balance
@@ -39,9 +39,8 @@
   (let [a (bank/open-account 100)]
     (bank/deposit! a 20)
     (bank/withdraw! a 5)
-    (is (match? [{:op :open     :amount 100}
-                 {:op :deposit  :amount 20}
-                 {:op :withdraw :amount 5}]
+    (is (match? [{:op :open, :amount 100} {:op :deposit, :amount 20}
+                 {:op :withdraw, :amount 5}]
                 (bank/history a)))))
 
 (deftest history-shape-by-field
@@ -50,22 +49,20 @@
       (bank/deposit! a 20)
       (bank/withdraw! a 5)
       (is (= 3 (count (bank/history a))))
-      (is (= :open     (:op     (first (bank/history a)))))
-      (is (= 100       (:amount (first (bank/history a)))))
-      (is (= :withdraw (:op     (last  (bank/history a)))))
-      (is (= 5         (:amount (last  (bank/history a))))))
+      (is (= :open (:op (first (bank/history a)))))
+      (is (= 100 (:amount (first (bank/history a)))))
+      (is (= :withdraw (:op (last (bank/history a)))))
+      (is (= 5 (:amount (last (bank/history a))))))
     (testing "history entries are appended in operation order"
       (let [a (bank/open-account 50)]
         (bank/deposit! a 10)
         (bank/withdraw! a 5)
-        (is (= [:open :deposit :withdraw]
-               (mapv :op (bank/history a))))))))
+        (is (= [:open :deposit :withdraw] (mapv :op (bank/history a))))))))
 
 (deftest concurrent-deposits
   (testing "no updates lost under contention"
-    (let [a     (bank/open-account 0)
-          tasks (doall (for [_ (range 1000)]
-                         (future (bank/deposit! a 1))))]
+    (let [a (bank/open-account 0)
+          tasks (doall (for [_ (range 1000)] (future (bank/deposit! a 1))))]
       (run! deref tasks)
       (is (= 1000 (bank/balance a)))
       (is (= 1001 (count (bank/history a)))))))

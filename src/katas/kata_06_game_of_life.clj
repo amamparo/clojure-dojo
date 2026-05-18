@@ -28,4 +28,4 @@
 
 (defn step [alive]
   ;; TODO
-  )
+)

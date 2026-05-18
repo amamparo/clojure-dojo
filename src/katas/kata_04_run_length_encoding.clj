@@ -20,8 +20,8 @@
 
 (defn encode [xs]
   ;; TODO
-  )
+)
 
 (defn decode [pairs]
   ;; TODO
-  )
+)
