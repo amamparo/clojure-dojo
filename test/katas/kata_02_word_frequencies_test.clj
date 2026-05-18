@@ -1,6 +1,6 @@
 (ns katas.kata-02-word-frequencies-test
   (:require [clojure.test :refer [deftest is testing]]
-            [katas.kata-02-word-frequencies :refer [word-frequencies top-n]]))
+            [katas.kata-02-word-frequencies :refer [top-n word-frequencies]]))
 
 (deftest empty-string
   (is (= {} (word-frequencies "")))
