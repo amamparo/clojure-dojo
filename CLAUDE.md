@@ -19,11 +19,14 @@ clojuredocs or the web.
 > **`just`-driven, no prescribed IDE.** Tasks run through a `justfile`:
 > `just test` (eftest — `## Running tests`), `just lint` (clj-kondo —
 > `## Linting`), `just format` / `just fix` (cljfmt check / rewrite —
-> `## Formatting`), and `just check` (format + test, fail-fast). Backing
-> aliases are in `deps.edn`: `:test`, `:cljfmt`, `:clj-kondo`. The old
-> REPL loop (`clj -A:test`, `dev/user.clj`, `(run k)`) and
-> `clj -M:test:kaocha` are gone — do not resurrect them. No editor or
-> IDE is prescribed — never tell the user to use a specific one.
+> `## Formatting`), `just check` (format + test, fail-fast), and
+> `just repl` (a plain `clojure -M:test` REPL for experimentation).
+> Backing aliases are in `deps.edn`: `:test`, `:cljfmt`, `:clj-kondo`.
+> The old kata-runner REPL *loop* (`dev/user.clj`, `(run k)`, the
+> `clj -A:test` entrypoint, `clj -M:test:kaocha`) is gone — do not
+> resurrect that mechanism; `just repl` is a bare REPL, not the loop.
+> No editor or IDE is prescribed — never tell the user to use a
+> specific one.
 
 ## Running tests
 

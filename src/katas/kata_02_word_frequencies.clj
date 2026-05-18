@@ -1,4 +1,5 @@
-(ns katas.kata-02-word-frequencies)
+(ns katas.kata-02-word-frequencies
+  (:require [clojure.string :as string]))
 
 ;; ─── Kata 2: Word frequencies ──────────────────────────────────────────
 ;;
@@ -23,10 +24,18 @@
 ;; If two pairs have the same count, the word that sorts earlier (with
 ;; `compare`) comes first.
 
+(defn clean [w]
+  (-> w
+      .trim
+      .toLowerCase
+      (string/replace #"^[.,!?;:\"'()\[\]]+|[.,!?;:\"'()\[\]]+$" "")))
+
 (defn word-frequencies [s]
-  ;; TODO
-  )
+  (frequencies (->> (string/split s #"\s+")
+                    (map clean)
+                    (filter (complement empty?)))))
 
 (defn top-n [s n]
-  ;; TODO
-  )
+  (take n (sort-by
+           (juxt #(- (last %)) first)
+           (word-frequencies s))))

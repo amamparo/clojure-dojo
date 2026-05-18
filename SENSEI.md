@@ -250,7 +250,17 @@ Reading nested expressions inside-out is painful. The threading macros invert th
 
 Rule of thumb: data-shaped operations (`assoc`, `update`, host method calls) go in `->`; sequence operations go in `->>`. Most Clojure pipelines you'll write are `->>`.
 
-`as->` lets you name the intermediate value when neither position fits.
+`as->` binds the running value to a name you can place *anywhere* — for a pipeline that mixes first-arg and last-arg steps, where neither `->` nor `->>` fits throughout:
+
+```clojure
+(as-> "a,b,c" s
+  (clojure.string/split s #",")        ; split wants the string first
+  (map clojure.string/upper-case s)    ; map wants the coll last
+  (clojure.string/join "-" s))
+;; => "A-B-C"
+```
+
+The second form (`s`) is the name; every step rebinds it, and you write `s` wherever that step needs the value.
 
 
 
