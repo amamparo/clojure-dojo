@@ -26,16 +26,13 @@
 
 (defn clean [w]
   (-> w
-      .trim
-      .toLowerCase
+      string/lower-case
       (string/replace #"^[.,!?;:\"'()\[\]]+|[.,!?;:\"'()\[\]]+$" "")))
 
 (defn word-frequencies [s]
   (frequencies (->> (string/split s #"\s+")
                     (map clean)
-                    (filter (complement empty?)))))
+                    (remove empty?))))
 
 (defn top-n [s n]
-  (take n (sort-by
-           (juxt #(- (last %)) first)
-           (word-frequencies s))))
+  (into [] (take n) (sort-by (juxt #(- (val %)) key) (word-frequencies s))))

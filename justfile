@@ -7,10 +7,6 @@
 test *args:
     clojure -M:test -m runner {{ args }}
 
-# Start a plain Clojure REPL (clojure -M:test); not the old kata-runner loop.
-repl:
-    clojure -M:test
-
 # Lint src and test with clj-kondo.
 lint:
     clojure -M:clj-kondo --lint src test
