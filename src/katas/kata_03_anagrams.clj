@@ -27,10 +27,8 @@
 ;; Hint: pick a canonical form (e.g. the sorted lower-cased letters) and
 ;; let `group-by` do the heavy lifting.
 
-(defn anagrams? [a b])
+(defn canonical [s] (frequencies (str/lower-case s)))
 
-;; TODO
+(defn anagrams? [a b] (= (canonical a) (canonical b)))
 
-(defn group-anagrams [strings])
-
-;; TODO
+(defn group-anagrams [strings] (vec (vals (group-by canonical strings))))
