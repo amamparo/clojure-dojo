@@ -18,10 +18,6 @@
 ;; Round-trip property:
 ;;   (= (vec xs) (decode (encode xs)))   for any seqable `xs`.
 
-(defn encode [xs]
-  ;; TODO
-)
+(defn encode [xs] (map (juxt count first) (partition-by identity xs)))
 
-(defn decode [pairs]
-  ;; TODO
-)
+(defn decode [pairs] (mapcat #(apply repeat %) pairs))
