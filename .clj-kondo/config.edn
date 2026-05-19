@@ -1,0 +1,16 @@
+;; clj-kondo backs `just lint` and editor analysis. Katas ship as `;; TODO` stubs,
+;; so unused params/requires under `katas.*` are by design (a fresh
+;; clone is red on purpose); `:lint-as` teaches kondo the custom
+;; `when-let*` binding macro. `infix` takes a parenthesised
+;; arithmetic form as DATA (e.g. `(1 + 2)`), so it is linted as
+;; `quote` — otherwise kondo reads `1` in call position as "a number
+;; is not a function". See CLAUDE.md "Learning-repo model" — don't
+;; "fix" these back.
+{:lint-as   {katas.kata-16-macros/when-let* clojure.core/let
+             katas.kata-16-macros/infix     clojure.core/quote}
+ :ns-groups [{:pattern "katas\\..*" :name katas}]
+ :config-in-ns
+ {katas  {:linters {:unused-binding   {:level :off}
+                    :unused-namespace {:level :off}}}
+  runner {:linters {:unused-private-var            {:level :off}
+                    :clojure-lsp/unused-public-var {:level :off}}}}}

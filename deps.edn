@@ -1,0 +1,9 @@
+{:paths ["src" "resources"]
+ :deps  {org.clojure/clojure {:mvn/version "1.12.5"}}
+ :aliases
+ {:test      {:extra-paths ["test"]
+              :extra-deps  {eftest/eftest              {:mvn/version "0.6.0"}
+                            nubank/matcher-combinators {:mvn/version "3.10.0"}}}
+  :zprint    {:extra-deps {zprint/zprint {:mvn/version "1.2.9"}}}
+  :clj-kondo {:extra-deps {clj-kondo/clj-kondo {:mvn/version "2026.04.15"}}
+              :main-opts  ["-m" "clj-kondo.main"]}}}

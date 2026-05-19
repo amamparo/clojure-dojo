@@ -1,0 +1,11 @@
+.cpcache/
+.clj-kondo/.cache/
+.idea/
+*.iml
+.DS_Store
+.claude/settings.local.json
+
+# Dojo build scaffolding — reference solutions + orchestration log.
+# Never part of shipped history (see TODO.md).
+.dojo/
+dojo-build-log.md
