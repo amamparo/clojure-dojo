@@ -3,50 +3,46 @@
             [matcher-combinators.test]
             [katas.kata-12-rpn :refer [evaluate]]))
 
-(deftest empty-program (is (= [] (evaluate []))))
+(deftest single-number (is (= 3 (evaluate [3]))))
 
-(deftest just-numbers (is (= [1 2 3] (evaluate [1 2 3]))))
+(deftest simple-addition (is (= 3 (evaluate [1 2 '+]))))
 
-(deftest basic-arithmetic
-  (is (= [3] (evaluate [1 2 '+])))
-  (is (= [-1] (evaluate [3 4 '-])))
-  (is (= [12] (evaluate [3 4 '*])))
-  (is (= [5] (evaluate [10 2 '/]))))
+(deftest subtraction-order
+  (testing "for `a b -`, the deeper element is the left operand"
+    (is (= -1 (evaluate [3 4 '-])))
+    (is (= 2 (evaluate [5 3 '-])))))
 
-(deftest non-commutative-order
-  (testing "deeper operand is left-hand side"
-    (is (= [-5] (evaluate [3 4 '- 5 '*]))) ; (3 - 4) * 5 = -5
-    (is (= [3] (evaluate [8 2 '/ 1 '-])))))
+(deftest multiplication-and-grouping
+  (is (= 20 (evaluate [2 3 '+ 4 '*])))
+  (is (= 17 (evaluate [5 1 2 '+ 4 '* '+]))))
 
-; (8 / 2) - 1 = 3
+(deftest division-is-exact
+  (is (= 3 (evaluate [6 2 '/])))
+  (is (= 7/2 (evaluate [7 2 '/]))))
 
-(deftest stack-ops
-  (is (= [16] (evaluate [4 'dup '*])))
-  (is (= [1 3] (evaluate [1 2 3 'swap 'drop])))
-  (is (= [1 2] (evaluate [1 2 3 'drop])))
-  (is (= [2 1] (evaluate [1 2 'swap]))))
+(deftest longer-expression
+  ;; 15 7 1 1 + - / 3 *  ==  ((15 / (7 - (1+1))) * 3) = (15/5)*3 = 9
+  (is (= 9 (evaluate [15 7 1 1 '+ '- '/ 3 '*]))))
 
-(deftest accepts-strings
-  (is (= [3] (evaluate [1 2 "+"])))
-  (is (= [16] (evaluate [4 "dup" "*"]))))
+(deftest unknown-op
+  (is (thrown-match? clojure.lang.ExceptionInfo
+                     {:type :unknown-op, :op 'pow}
+                     (evaluate [2 3 'pow]))))
 
-(deftest stack-underflow-arith
+(deftest stack-underflow
   (is (thrown-match? clojure.lang.ExceptionInfo
                      {:type :stack-underflow}
-                     (evaluate ['+])))
+                     (evaluate [1 '+])))
   (is (thrown-match? clojure.lang.ExceptionInfo
                      {:type :stack-underflow}
-                     (evaluate [1 '+]))))
+                     (evaluate ['+]))))
 
-(deftest stack-underflow-stack-op
-  (is (thrown-match? clojure.lang.ExceptionInfo
-                     {:type :stack-underflow}
-                     (evaluate ['drop])))
-  (is (thrown-match? clojure.lang.ExceptionInfo
-                     {:type :stack-underflow}
-                     (evaluate [1 'swap]))))
+(deftest malformed-empty
+  (is
+   (thrown-match? clojure.lang.ExceptionInfo {:type :malformed} (evaluate []))))
 
-(deftest unknown-token
-  (is (thrown-match? clojure.lang.ExceptionInfo
-                     {:type :unknown-token, :token 'mod}
-                     (evaluate [1 2 'mod]))))
+(deftest malformed-leftover
+  (testing "more than one value left on the stack is malformed"
+    (is (thrown-match? clojure.lang.ExceptionInfo
+                       {:type :malformed}
+                       (evaluate [1 2 3 '+])))))

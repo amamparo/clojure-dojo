@@ -50,6 +50,16 @@ adversarial QA, freshly spawned with no memory of prior rounds.
   north-star goal and the gradient criterion. The concept coverage is
   **discovered through iteration** with the Sensei and the Seito's gap
   reports — it is deliberately *not* prescribed in this brief.
+- **Minimize the count; maximize non-redundant conceptual coverage per
+  kata.** More katas is not better — there is a point of diminishing
+  returns. Optimize for the *fewest* katas that still cover the concept
+  surface, where every kata earns its place with a **distinct**
+  conceptual contribution. Merge or cut any kata whose coverage is
+  redundant with another's or only marginal (e.g. sibling katas added
+  purely to smooth the gradient by re-practising an idea through a
+  second lens). Prefer fixing a gradient cliff with prose or a
+  better-chosen single kata over inserting an extra one. The Shihan
+  must be able to state each kata's unique conceptual justification.
 - Owns the difficulty curve and the source material; co-owns, with the
   Sensei, exactly where each kata sits relative to the prose.
 - Default kata shape is stub → implement (`;; TODO` body, tests written

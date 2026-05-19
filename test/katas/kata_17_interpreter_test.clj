@@ -1,7 +1,7 @@
-(ns katas.kata-15-interpreter-test
+(ns katas.kata-17-interpreter-test
   (:require [clojure.test :refer [deftest is testing]]
             [matcher-combinators.test]
-            [katas.kata-15-interpreter :refer [evaluate]]))
+            [katas.kata-17-interpreter :refer [evaluate]]))
 
 (deftest self-evaluating
   (is (= 42 (evaluate {} 42)))
@@ -9,7 +9,9 @@
   (is (= true (evaluate {} true)))
   (is (= false (evaluate {} false)))
   (is (nil? (evaluate {} nil)))
-  (is (= :kw (evaluate {} :kw))))
+  (is (= :kw (evaluate {} :kw)))
+  (is (= [1 2] (evaluate {} [1 2])))
+  (is (= {:a 1} (evaluate {} {:a 1}))))
 
 (deftest symbol-lookup
   (is (= 10 (evaluate '{x 10} 'x)))
@@ -17,7 +19,7 @@
 
 (deftest unbound-symbol
   (is (thrown-match? clojure.lang.ExceptionInfo
-                     {:type :unbound-symbol}
+                     {:type :unbound-symbol, :sym 'missing}
                      (evaluate {} 'missing))))
 
 (deftest arithmetic
@@ -34,12 +36,10 @@
   (is (false? (evaluate {} '(< 2 1))))
   (is (true? (evaluate {} '(> 2 1)))))
 
-(deftest if-truthy
+(deftest if-form
   (is (= :yes (evaluate {} '(if true :yes :no))))
   (is (= :no (evaluate {} '(if false :yes :no))))
-  (is (= :no (evaluate {} '(if nil :yes :no)))))
-
-(deftest if-evaluates-its-condition
+  (is (= :no (evaluate {} '(if nil :yes :no))))
   (is (= :yes (evaluate {} '(if (< 1 2) :yes :no)))))
 
 (deftest do-form
@@ -58,21 +58,19 @@
 (deftest let-implicit-do
   (is (= :last (evaluate {} '(let [x 1] :first :middle :last)))))
 
-(deftest fn-identity (is (= 3 (evaluate {} '((fn [x] x) 3)))))
-
-(deftest fn-squared (is (= 9 (evaluate {} '((fn [x] (* x x)) 3)))))
+(deftest fn-basics
+  (is (= 3 (evaluate {} '((fn [x] x) 3))))
+  (is (= 9 (evaluate {} '((fn [x] (* x x)) 3))))
+  (is (= 7 (evaluate {} '((fn [a b] (+ a b)) 3 4)))))
 
 (deftest fn-captures-lexical-env
   (is (= 15 (evaluate '{base 10} '((fn [x] (+ base x)) 5)))))
-
-(deftest fn-multiple-args (is (= 7 (evaluate {} '((fn [a b] (+ a b)) 3 4)))))
 
 (deftest fn-bound-by-let
   (is (= 20 (evaluate {} '(let [double (fn [x] (* x 2))] (double 10))))))
 
 (deftest fn-implicit-do-body
-  (testing "body has multiple forms; only the last value is returned"
-    (is (= 6 (evaluate {} '((fn [x] (+ x 1) (+ x 2) (+ x 3)) 3))))))
+  (is (= 6 (evaluate {} '((fn [x] (+ x 1) (+ x 2) (+ x 3)) 3)))))
 
 (deftest def-binds-in-atom-env
   (let [env (atom {})]
@@ -83,7 +81,7 @@
   (let [env (atom {})] (is (= 5 (evaluate env '(def x 5))))))
 
 (deftest def-supports-recursion
-  (testing "a fn defined in an atom env can recursively call itself by name"
+  (testing "a fn defined in an atom env can recursively call itself"
     (let [env (atom {})]
       (evaluate env '(def fact (fn [n] (if (= n 0) 1 (* n (fact (- n 1)))))))
       (is (= 120 (evaluate env '(fact 5)))))))
@@ -93,13 +91,21 @@
                      {:type :immutable-env}
                      (evaluate {} '(def x 5)))))
 
+(deftest call-non-callable
+  (is (thrown-match? clojure.lang.ExceptionInfo
+                     {:type :not-callable}
+                     (evaluate '{x 5} '(x 1 2)))))
+
 (deftest call-of-unbound-symbol
-  (testing "calling an unbound symbol bubbles :unbound-symbol from lookup"
-    (is (thrown-match? clojure.lang.ExceptionInfo
-                       {:type :unbound-symbol}
-                       (evaluate {} '(banana 1 2))))))
+  (is (thrown-match? clojure.lang.ExceptionInfo
+                     {:type :unbound-symbol}
+                     (evaluate {} '(banana 1 2)))))
 
 (deftest nested-program
   (is (= 16
-         (evaluate '{base 4}
-                   '(let [n base m (* n n)] (if (> m 10) m :small))))))
+         (evaluate '{base 4} '(let [n base m (* n n)] (if (> m 10) m :small)))))
+  (let [env (atom {})]
+    (evaluate env '(def add (fn [a b] (+ a b))))
+    (evaluate env '(def twice (fn [f x] (f (f x)))))
+    (is (= 7 (evaluate env '(twice (fn [n] (+ n 1)) 5))))
+    (is (= 10 (evaluate env '(add (twice (fn [n] (+ n 2)) 1) 5))))))

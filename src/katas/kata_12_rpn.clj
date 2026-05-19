@@ -1,33 +1,35 @@
 (ns katas.kata-12-rpn)
 
-;; ─── Kata 12: RPN calculator ──────────────────────────────────
+;; ─── Kata 12: RPN calculator ───────────────────────────────────────────
+;;
+;; A dispatch table (a map of operator symbol → function) walked with a
+;; `reduce` over a token sequence, threading a stack accumulator.
 ;;
 ;; `evaluate` takes a sequence of tokens. Each token is either:
-;;   - a number (long or double), pushed onto the stack
-;;   - an operator from this set, given as a symbol or string:
-;;       +  -  *  /             arithmetic, pop two, push result
-;;       dup                    duplicate top of stack
-;;       drop                   discard top of stack
-;;       swap                   swap top two
+;;   - a number (long, double, or ratio), pushed onto the stack
+;;   - an operator symbol from this set, popping two and pushing one:
+;;       +  -  *  /             arithmetic
 ;;
-;; For arithmetic, the deeper operand is the LEFT-hand side:
+;; For arithmetic the DEEPER operand is the left-hand side:
 ;;   [3 4 -]   ⇒ 3 - 4 = -1
-;;   [10 2 /]  ⇒ 10 / 2 = 5
+;;   [10 2 /]  ⇒ 10 / 2 = 5    (division is exact: [7 2 /] ⇒ 7/2)
 ;;
-;; The result is the entire stack at the end, in order from BOTTOM to TOP.
+;; A well-formed expression leaves exactly ONE value on the stack;
+;; `evaluate` returns that single value (not a stack).
 ;;
-;;   (evaluate [1 2 '+])             => [3]
-;;   (evaluate [3 4 '- 5 '*])        => [-5]
-;;   (evaluate [1 2 3 'swap 'drop])  => [1 3]
-;;   (evaluate [4 'dup '*])          => [16]
-;;
-;; Tokens may be passed as either symbols (`'+`) or strings (`"+"`).
+;;   (evaluate [3])                  => 3
+;;   (evaluate [1 2 '+])             => 3
+;;   (evaluate [3 4 '- 5 '*])        => -5
+;;   (evaluate [7 2 '/])             => 7/2
+;;   (evaluate [15 7 1 1 '+ '- '/ 3 '*]) => 9
 ;;
 ;; Errors (use `ex-info`):
-;;   - operator needs more operands than the stack has → {:type
-;;   :stack-underflow}
-;;   - unknown token                                   → {:type :unknown-token,
-;;   :token t}
+;;   - an operator with fewer than two operands on the stack
+;;       → {:type :stack-underflow}
+;;   - an unknown operator symbol
+;;       → {:type :unknown-op, :op <the-symbol>}
+;;   - an empty input, or more than one value left at the end
+;;       → {:type :malformed}
 
 (defn evaluate [tokens]
   ;; TODO

@@ -2,9 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-A personal practice space for Clojure katas. [SENSEI.md](SENSEI.md) is the
-kata-aligned learning narrative — its sections are a
-concept progression, each kata gated by a `> Enough for Kata N` checkpoint.
+A personal practice space for Clojure katas. [DENSHO.md](DENSHO.md) is the
+kata-aligned learning narrative — its sections (§0–§25) are a
+concept progression, each kata gated by a
+`> ## 🥋 Complete kata N ("…") before continuing` checkpoint placed
+exactly where the prose above it has equipped the reader for that kata.
 [README.md](README.md) is the human quickstart; this file is authoritative
 for Claude.
 
@@ -12,7 +14,7 @@ When writing or reviewing Clojure here, follow the [Community Clojure Style
 Guide](https://github.com/bbatsov/clojure-style-guide); there is no vendored
 style file in this repo.
 
-The dojo is intentionally offline / self-contained: SENSEI.md and the test
+The dojo is intentionally offline / self-contained: DENSHO.md and the test
 suites are the only references a learner needs. Don't send the user to
 clojuredocs or the web.
 
@@ -32,9 +34,9 @@ Tests are plain `clojure.test` (`deftest`/`is`/`testing`), run through
 the `justfile`:
 
 ```sh
-just test                       # every test in the repo
-just test 9                     # every test for kata 9
-just test 9 history-is-ordered  # one test by name, in kata 9
+just test                        # every test in the repo
+just test 13                     # every test for kata 13
+just test 13 history-is-ordered  # one test by name, in kata 13
 ```
 
 `just test` shells out to `clojure -M:test -m runner`. `test/runner.clj`
@@ -86,8 +88,12 @@ and CI. No `cljfmt.edn`, no runner namespace:
   cljfmt could not.
 - `:fn-map` — `defn`/`defn-`/`defmacro` → `:arg2`, keeping the
   argument vector on the name line (the conventional Clojure/bbatsov
-  shape, what cljfmt produced); `when-let*` → `:binding` so kata 14's
-  macro indents like `let`. A future let-style binding macro needs its
+  shape, what cljfmt produced); `when-let*` → `:binding` so the
+  let-style binding macro defined in the macros kata
+  (`kata_16_macros`, `katas.kata-16-macros/when-let*`) indents like
+  `let`. The exact `.zprint.edn` entry is `"when-let*" :binding`
+  (keyed by the bare symbol name, so it applies wherever `when-let*`
+  is defined or called). A future let-style binding macro needs its
   own `:binding` entry or `fix` misaligns its body.
 
 zprint is idempotent here (`fix` then `check` is clean; the whole tree
@@ -111,26 +117,54 @@ separately.
 
 ## Learning-repo model
 
-Katas ship as stubs with `;; TODO` bodies, while the tests are written
-against the intended solution. A freshly-cloned repo therefore has **red
-tests by design** — that is not breakage. clj-kondo is likewise red on a
-fresh clone (unused params/requires in the stubs, plus an unresolved
-symbol at every `when-let*` call); `.clj-kondo/config.edn` turns
-`:unused-binding`/`:unused-namespace` off for the `katas.*` ns-group and
-`:lint-as`-es `when-let*` to `clojure.core/let`, so a clean clone lints
-clean — don't revert that thinking it's a bug. Claude's role here is to
-*review* a solution the user wrote, or assist when asked — not to
-pre-emptively fill in stubs.
+Most katas ship as stubs with `;; TODO` bodies; a couple ship
+working-but-flawed code (see "Kata file conventions" — the
+extend-code variant). Either way the tests are written against the
+intended solution, so a freshly-cloned repo has **red tests by
+design** — that is not breakage. clj-kondo is likewise red on a fresh
+clone (unused params/requires in the stubs, plus unresolved/
+mis-parsed symbols at every `when-let*` and `infix` use in the macros
+kata). `.clj-kondo/config.edn` turns `:unused-binding`/
+`:unused-namespace` off for the `katas.*` ns-group and `:lint-as`-es
+the two macros kata vars:
+
+```clojure
+:lint-as {katas.kata-16-macros/when-let* clojure.core/let
+          katas.kata-16-macros/infix     clojure.core/quote}
+```
+
+`when-let*` is linted as `clojure.core/let` (it is a `let`-style
+binding macro); `infix` is linted as `clojure.core/quote` because it
+takes a *parenthesised arithmetic form as data* (e.g. `(1 + 2)`) — so
+without this kondo would read `1` in call position as "a number is not
+a function". (There is no separate `when-let*` kata in the final
+layout — both macros live in `kata_16_macros`,
+`katas.kata-16-macros`.) With this config a clean clone lints clean —
+don't revert it thinking it's a bug. Claude's role here is to *review*
+a solution the user wrote, or assist when asked — not to pre-emptively
+fill in stubs or "fix" the inherited code in the extend-code katas.
 
 ## Kata file conventions
 
+- The final layout is **17 katas**, zero-padded, in this order:
+  `kata_01_fizzbuzz`, `kata_02_temperature`,
+  `kata_03_word_frequencies`, `kata_04_roster`, `kata_05_anagrams`,
+  `kata_06_run_length_encoding`, `kata_07_inventory`,
+  `kata_08_primes`, `kata_09_digits`, `kata_10_roman_numerals`,
+  `kata_11_bowling`, `kata_12_rpn`, `kata_13_bank_account`,
+  `kata_14_memoize`, `kata_15_shapes`, `kata_16_macros`,
+  `kata_17_interpreter`. README's "## Katas" list mirrors this for
+  orientation only; DENSHO.md (§0–§25) is authoritative for order and
+  for where each kata is attempted.
 - One file per kata at `src/katas/kata_NN_<slug>.clj`, namespace
   `katas.kata-NN-<slug>`. Test at `test/katas/kata_NN_<slug>_test.clj`,
   namespace `katas.kata-NN-<slug>-test`. Tests `:refer [...]` the specific
   vars under test (or `:as` alias for wider surfaces — see the bank-account
-  kata, `kata_09`).
-- Each stub follows this fixed shape — `just fix` (zprint) enforces it
-  exactly, so don't hand-fight it:
+  kata, `kata_13`).
+- The **default** kata shape is a `;; TODO` stub — one or more `defn`
+  bodies left unimplemented, tests written against the intended
+  solution. A stub follows this fixed shape; `just fix` (zprint)
+  enforces it exactly, so don't hand-fight it:
 
   ```clojure
   (ns katas.kata-NN-slug)
@@ -144,13 +178,32 @@ pre-emptively fill in stubs.
   )
   ```
 
+- **Sanctioned variant — extend / fix existing code.** A kata may
+  instead ship a small, *working but deliberately incomplete-or-buggy*
+  namespace: real definitions to read, one (or more) carrying a defect
+  the tests expose and/or one left as a `;; TODO` to implement. This is
+  an intentional deviation from the stub-only convention above — it
+  directly serves the "contribute to an existing codebase" goal (read
+  an unfamiliar namespace, fix it in its existing style, leave correct
+  code alone). In the final layout exactly **two** katas are this
+  variant: **`kata_07_inventory`** (one boundary-condition bug in
+  `low-stock`, plus `restock-report` unimplemented) and
+  **`kata_13_bank_account`** (a `deref`/compute/`reset!` concurrency
+  bug in `deposit!`, plus `withdraw!` unimplemented). DENSHO §15 and
+  §21 set these up and the kata file headers state precisely which
+  functions are correct vs. to-fix. Such a file still passes `just
+  fix`/`just lint` clean on a fresh clone and its tests are still red
+  by design until fixed. Don't pre-emptively fix it; Claude's job is
+  to review the user's fix or assist on request.
 - Kata numbers encode a deliberate complexity / learning progression and are
   referenced externally. When inserting a new kata at position K, renumber
   everything ≥ K. For each moved kata that means: move the source file and
   update its `ns` form and `;; ─── Kata N:` header; move the test file and
-  update its `ns` + `:require`; and update the matching `> Enough for
-  Kata N` checkpoint in [SENSEI.md](SENSEI.md). The files are the source of
-  truth — there is no kata list in the README.
+  update its `ns` + `:require`; and update the matching
+  `> ## 🥋 Complete kata N ("…") before continuing` checkpoint in
+  [DENSHO.md](DENSHO.md) (and DENSHO's body text where it names the
+  kata). The files are the source of truth — README's list is
+  orientation only.
 
 ## Resources directory
 

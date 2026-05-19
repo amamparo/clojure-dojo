@@ -19,6 +19,10 @@
   (is (= 100 (count (fizzbuzz 100))))
   (is (= 1000 (count (fizzbuzz 1000)))))
 
+(deftest returns-a-vector
+  (testing "the result supports indexed access (it is a vector)"
+    (is (vector? (fizzbuzz 10)))))
+
 (deftest divisibility-rules
   (let [out (fizzbuzz 100)
         at #(nth out (dec %))]
