@@ -1,0 +1,7 @@
+{:style :community
+ :width 80
+ :parse {:interpose "\n\n"}
+ :fn-map {"when-let*" :binding
+          "defn" :arg2
+          "defn-" :arg2
+          "defmacro" :arg2}}

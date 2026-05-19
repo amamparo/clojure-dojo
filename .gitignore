@@ -1,0 +1,6 @@
+.cpcache/
+.clj-kondo/.cache/
+.idea/
+*.iml
+.DS_Store
+.claude/settings.local.json

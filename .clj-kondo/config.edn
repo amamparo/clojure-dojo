@@ -1,0 +1,12 @@
+;; clj-kondo backs `just lint` and editor analysis. Katas ship as `;; TODO` stubs,
+;; so unused params/requires under `katas.*` are by design (a fresh
+;; clone is red on purpose); `:lint-as` teaches kondo the custom
+;; `when-let*` binding macro. See CLAUDE.md "Learning-repo model" —
+;; don't "fix" these back.
+{:lint-as   {katas.kata-14-when-let-star/when-let* clojure.core/let}
+ :ns-groups [{:pattern "katas\\..*" :name katas}]
+ :config-in-ns
+ {katas  {:linters {:unused-binding   {:level :off}
+                    :unused-namespace {:level :off}}}
+  runner {:linters {:unused-private-var            {:level :off}
+                    :clojure-lsp/unused-public-var {:level :off}}}}}
