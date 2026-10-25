@@ -1,6 +1,6 @@
 (ns katas.kata-13-bank-account-test
   (:require [clojure.test :refer [deftest is testing]]
-            [matcher-combinators.test]
+            [matcher-combinators.test :refer [match? thrown-match?]]
             [katas.kata-13-bank-account :as bank]))
 
 (deftest opening-balance

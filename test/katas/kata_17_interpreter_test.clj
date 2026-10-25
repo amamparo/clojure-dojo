@@ -1,6 +1,6 @@
 (ns katas.kata-17-interpreter-test
   (:require [clojure.test :refer [deftest is testing]]
-            [matcher-combinators.test]
+            [matcher-combinators.test :refer [thrown-match?]]
             [katas.kata-17-interpreter :refer [evaluate]]))
 
 (deftest self-evaluating

@@ -1,6 +1,6 @@
 (ns katas.kata-12-rpn-test
   (:require [clojure.test :refer [deftest is testing]]
-            [matcher-combinators.test]
+            [matcher-combinators.test :refer [thrown-match?]]
             [katas.kata-12-rpn :refer [evaluate]]))
 
 (deftest single-number (is (= 3 (evaluate [3]))))
