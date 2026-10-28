@@ -2,14 +2,9 @@
 
 ;; ─── Kata 8: Primes ────────────────────────────────────────────────────
 ;;
-;; Build an infinite lazy seq of primes. `primes` is the seq itself;
-;; `nth-prime` is a lookup into it, NOT a second search. Filtering an
-;; infinite generator stays lazy and infinite — forcing a deep prefix
-;; must neither hang nor overflow the stack.
-;;
 ;; ── prime? ─────────────────────────────────────────────────────────────
 ;;
-;; True iff n is a prime integer (> 1, no divisor in 2..√n).
+;; True iff n is prime: an integer > 1 whose only divisors are 1 and n.
 ;;
 ;;   (prime? 2)  => true
 ;;   (prime? 97) => true
@@ -18,14 +13,18 @@
 ;;
 ;; ── primes ─────────────────────────────────────────────────────────────
 ;;
-;; The infinite, lazy, ascending seq of all primes. A `def` may hold it
-;; directly. (Stubbed as nil — replace the body.)
+;; The infinite, lazy, ascending seq of all primes.
+;; (Stubbed as nil — replace the body.)
 ;;
 ;;   (take 5 primes)               => (2 3 5 7 11)
 ;;   (take-while #(< % 30) primes) => (2 3 5 7 11 13 17 19 23 29)
 ;;   (nth primes 999)              => 7919
+;;   (nth primes 9999)             => 104729
+;;   (first (filter #(> % 1000000) primes)) => 1000003
 ;;
 ;; ── nth-prime ──────────────────────────────────────────────────────────
+;;
+;; The nth prime, counting from 0. n is a non-negative integer.
 ;;
 ;;   (nth-prime 0)   => 2
 ;;   (nth-prime 10)  => 31

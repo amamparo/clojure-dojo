@@ -2,10 +2,9 @@
 
 ;; ─── Kata 15: Shapes ───────────────────────────────────────────────────
 ;;
-;; The two polymorphism tools, side by side, so you feel the tradeoff.
-;; Protocols dispatch on a TYPE (closed methods, open types); a new type
-;; means a whole new record. Multimethods dispatch on a FUNCTION of the
-;; args (open methods and types); a new case means one more `defmethod`.
+;; This is NOT a blank stub. The protocol, both record shells, the
+;; `defmulti` and its `:default` method are given. Fill the method bodies,
+;; add one `defmethod` per listed :kind, and write `total-area`.
 ;;
 ;; ── Shape protocol + records ───────────────────────────────────────────
 ;;
@@ -14,7 +13,6 @@
 ;;
 ;;   (area (->Circle 1))           => Math/PI
 ;;   (perimeter (->Rectangle 3 4)) => 14
-;;   (satisfies? Shape (->Circle 1)) => true
 ;;
 ;; ── describe (multimethod) ─────────────────────────────────────────────
 ;;
@@ -36,28 +34,23 @@
 
 (defrecord Circle [r]
   Shape
-    (area [_]
-          ;; TODO
+    (area [_] ;; TODO
     )
-    (perimeter [_]
-               ;; TODO
+    (perimeter [_] ;; TODO
     ))
 
 (defrecord Rectangle [w h]
   Shape
-    (area [_]
-          ;; TODO
+    (area [_] ;; TODO
     )
-    (perimeter [_]
-               ;; TODO
+    (perimeter [_] ;; TODO
     ))
 
 (defmulti describe :kind)
 
-(defmethod describe :default
-  [{:keys [kind]}]
-  ;; TODO — plus :circle :rectangle :triangle :square methods
-  (str "unknown shape: " kind))
+;; TODO: defmethod describe for :circle :rectangle :triangle :square
+
+(defmethod describe :default [{:keys [kind]}] (str "unknown shape: " kind))
 
 (defn total-area [shapes]
   ;; TODO

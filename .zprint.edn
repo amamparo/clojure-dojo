@@ -1,7 +1,19 @@
-{:style :community
+{:style [:community :respect-nl]
  :width 80
  :parse {:interpose "\n\n"}
- :fn-map {"when-let*" :binding
-          "defn" :arg2
-          "defn-" :arg2
-          "defmacro" :arg2}}
+ :fn-map
+ {"when-let*" :binding
+  ;; When a defn wraps, a single-arity one keeps `(defn name [args]` on its
+  ;; first line and a multi-arity one starts each arity on its own line
+  ;; (DENSHO §5 layout). A form that fits on one line may stay there.
+  "defn" [:none
+          {:list {:option-fn
+                  (fn ([] "defn-arity")
+                      ([_opts _n sexpr]
+                       (if (vector? (nth sexpr 2 nil))
+                         {:fn-style :arg2,
+                          :next-inner {:list {:option-fn nil}}}
+                         {:fn-style :arg1-body,
+                          :next-inner {:list {:option-fn nil}}})))}}]
+  "defn-" "defn"
+  "defmacro" "defn"}}

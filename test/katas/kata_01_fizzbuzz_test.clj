@@ -25,18 +25,25 @@
 
 (deftest divisibility-rules
   (let [out (fizzbuzz 100)
-        at #(nth out (dec %))]
+        at #(nth out (dec %) nil) ; nil past the end
+        wrong (fn [expected? idxs]
+                (for [i idxs
+                      :when (not (expected? i (at i)))]
+                  [i (at i)]))]
     (testing "every multiple of 15 is FizzBuzz"
-      (doseq [i (range 15 101 15)] (is (= "FizzBuzz" (at i)) (str "i=" i))))
+      (is (= [] (wrong (fn [_ v] (= "FizzBuzz" v)) (range 15 101 15)))))
     (testing "multiples of 3 not 5 are Fizz"
-      (doseq [i (range 1 101)
-              :when (and (zero? (mod i 3)) (pos? (mod i 5)))]
-        (is (= "Fizz" (at i)) (str "i=" i))))
+      (is (= []
+             (wrong (fn [_ v] (= "Fizz" v))
+                    (filter #(and (zero? (mod % 3)) (pos? (mod % 5)))
+                            (range 1 101))))))
     (testing "multiples of 5 not 3 are Buzz"
-      (doseq [i (range 1 101)
-              :when (and (zero? (mod i 5)) (pos? (mod i 3)))]
-        (is (= "Buzz" (at i)) (str "i=" i))))
+      (is (= []
+             (wrong (fn [_ v] (= "Buzz" v))
+                    (filter #(and (zero? (mod % 5)) (pos? (mod % 3)))
+                            (range 1 101))))))
     (testing "non-multiples of 3 or 5 are integers equal to i"
-      (doseq [i (range 1 101)
-              :when (and (pos? (mod i 3)) (pos? (mod i 5)))]
-        (is (= i (at i)) (str "i=" i))))))
+      (is (= []
+             (wrong (fn [i v] (= i v))
+                    (filter #(and (pos? (mod % 3)) (pos? (mod % 5)))
+                            (range 1 101))))))))

@@ -11,11 +11,16 @@
   (is (nil? (evaluate {} nil)))
   (is (= :kw (evaluate {} :kw)))
   (is (= [1 2] (evaluate {} [1 2])))
-  (is (= {:a 1} (evaluate {} {:a 1}))))
+  (is (= '[x 1] (evaluate '{x 5} '[x 1])))
+  (is (= {:a 1} (evaluate {} {:a 1})))
+  (is (= '() (evaluate {} '()))))
 
 (deftest symbol-lookup
   (is (= 10 (evaluate '{x 10} 'x)))
-  (is (= "abc" (evaluate '{s "abc"} 's))))
+  (is (= "abc" (evaluate '{s "abc"} 's)))
+  (is (false? (evaluate '{flag false} 'flag)))
+  (is (nil? (evaluate '{n nil} 'n)))
+  (is (= :f (evaluate {} '(let [x false] (if x :t :f))))))
 
 (deftest unbound-symbol
   (is (thrown-match? clojure.lang.ExceptionInfo
@@ -40,7 +45,10 @@
   (is (= :yes (evaluate {} '(if true :yes :no))))
   (is (= :no (evaluate {} '(if false :yes :no))))
   (is (= :no (evaluate {} '(if nil :yes :no))))
-  (is (= :yes (evaluate {} '(if (< 1 2) :yes :no)))))
+  (is (= :yes (evaluate {} '(if (< 1 2) :yes :no))))
+  (testing "the untaken branch is not evaluated"
+    (is (= :yes (evaluate {} '(if true :yes (boom)))))
+    (is (= :no (evaluate {} '(if false (boom) :no))))))
 
 (deftest do-form
   (is (= 4 (evaluate {} '(do 1 2 3 4))))
@@ -55,6 +63,14 @@
   (testing "shadow does not leak outside the let"
     (is (= 1 (evaluate '{x 1} '(do (let [x 99] x) x))))))
 
+(deftest let-does-not-leak-into-atom-env
+  (let [env (atom '{x 1})]
+    (is (= 1 (evaluate env '(do (let [x 99] x) x))))
+    (evaluate env '(let [tmp 5] tmp))
+    (is (thrown-match? clojure.lang.ExceptionInfo
+                       {:type :unbound-symbol, :sym 'tmp}
+                       (evaluate env 'tmp)))))
+
 (deftest let-implicit-do
   (is (= :last (evaluate {} '(let [x 1] :first :middle :last)))))
 
@@ -64,7 +80,21 @@
   (is (= 7 (evaluate {} '((fn [a b] (+ a b)) 3 4)))))
 
 (deftest fn-captures-lexical-env
-  (is (= 15 (evaluate '{base 10} '((fn [x] (+ base x)) 5)))))
+  (is (= 15 (evaluate '{base 10} '((fn [x] (+ base x)) 5))))
+  (testing "a free symbol resolves in the defining scope, not the caller's"
+    (is (= 15
+           (evaluate {}
+                     '(let [adder (let [n 10] (fn [x] (+ x n)))] (adder 5)))))
+    (is (thrown-match?
+         clojure.lang.ExceptionInfo
+         {:type :unbound-symbol, :sym 'secret}
+         (evaluate
+          {}
+          '(let [f (fn [y] secret)] ((fn [x] (let [secret 1] (f x))) 1)))))))
+
+(deftest params-shadow-captured-bindings
+  (is (= 3 (evaluate '{x 1} '((fn [x] x) 3))))
+  (is (= 2 (evaluate {} '(let [x 1] ((fn [x] x) 2))))))
 
 (deftest fn-bound-by-let
   (is (= 20 (evaluate {} '(let [double (fn [x] (* x 2))] (double 10))))))
@@ -86,6 +116,22 @@
       (evaluate env '(def fact (fn [n] (if (= n 0) 1 (* n (fact (- n 1)))))))
       (is (= 120 (evaluate env '(fact 5)))))))
 
+(deftest a-defd-fn-sees-later-defs
+  (let [env (atom {})]
+    (evaluate env '(def f (fn [] (g))))
+    (evaluate env '(def g (fn [] 42)))
+    (is (= 42 (evaluate env '(f))))))
+
+(deftest closures-from-a-defd-fn-keep-their-own-params
+  (let [env (atom {})]
+    (evaluate env '(def make-adder (fn [n] (fn [x] (+ x n)))))
+    (evaluate env '(def add1 (make-adder 1)))
+    (evaluate env '(def add2 (make-adder 2)))
+    (is (= 11 (evaluate env '(add1 10))))
+    (is (thrown-match? clojure.lang.ExceptionInfo
+                       {:type :unbound-symbol, :sym 'n}
+                       (evaluate env 'n)))))
+
 (deftest def-fails-on-immutable-env
   (is (thrown-match? clojure.lang.ExceptionInfo
                      {:type :immutable-env}
@@ -93,13 +139,16 @@
 
 (deftest call-non-callable
   (is (thrown-match? clojure.lang.ExceptionInfo
-                     {:type :not-callable}
+                     {:type :not-callable, :value 5}
                      (evaluate '{x 5} '(x 1 2)))))
 
 (deftest call-of-unbound-symbol
   (is (thrown-match? clojure.lang.ExceptionInfo
                      {:type :unbound-symbol}
-                     (evaluate {} '(banana 1 2)))))
+                     (evaluate {} '(banana 1 2))))
+  (is (thrown-match? clojure.lang.ExceptionInfo
+                     {:type :unbound-symbol, :sym 'str}
+                     (evaluate {} '(str 1 2)))))
 
 (deftest nested-program
   (is (= 16

@@ -2,11 +2,11 @@
 
 ;; ─── Kata 10: Roman numerals ───────────────────────────────────────────
 ;;
-;; Convert between integers (1–3999) and Roman numerals, both ways. The
-;; clean approach is an ordered table of [value, symbol] pairs that
-;; already includes the subtractive forms (CM, CD, XC, XL, IX, IV) — then
-;; a `reduce`-style greedy walk over it. No special cases, no `cond`
-;; ladder.
+;; Convert between integers 1–3999 and Roman numerals, both ways.
+;;
+;; Symbols: I 1, V 5, X 10, L 50, C 100, D 500, M 1000. Write symbols
+;; largest first; no symbol repeats more than three times. Six pairs
+;; subtract instead: IV 4, IX 9, XL 40, XC 90, CD 400, CM 900.
 ;;
 ;; ── ->roman ────────────────────────────────────────────────────────────
 ;;
@@ -19,8 +19,7 @@
 ;;
 ;; ── roman-> ────────────────────────────────────────────────────────────
 ;;
-;; The inverse. Assume well-formed input (only the canonical forms
-;; `->roman` produces).
+;; The inverse. Assume well-formed input (canonical forms only).
 ;;
 ;;   (roman-> "I")        => 1
 ;;   (roman-> "IV")       => 4

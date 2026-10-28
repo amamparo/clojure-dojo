@@ -1,59 +1,52 @@
 # DENSHO
 
-The transmission. Read top to bottom; the order is the curriculum. At
-each `> ## 🥋` break you have been given everything the next kata
-needs — and nothing it doesn't. Solve it before reading on. Tests are
-the oracle: `just test N` runs kata N. Some katas hand you working code
-to read and extend instead of a blank stub; the brief says which.
+Read top to bottom; the order is the curriculum. At each `> ## 🥋`
+break you have been given everything the next kata needs — and nothing
+it doesn't. Solve it before reading on. Tests are the oracle: `just
+test N` runs kata N. Some katas hand you working code to read and
+extend instead of a blank stub; the brief says which. `just fix`
+rewrites your files to the layout `just format` checks; `just check`
+runs lint, that check and every kata's tests, so it stays red until all
+17 are solved. §N means section N of this document.
 
-This document is the only text you need. No web, no clojuredocs, no
-LLM. The point is to finish with the language in your hands.
+This document, the tests and the REPL (§1) are all you need. No web,
+no clojuredocs, no LLM.
 
 
 
 ## 0. The mental model
 
-Four ideas to absorb first. The rest is mechanical.
+Four ideas underlie the rest.
 
-**Code is data.** A Clojure program is a tree of lists, vectors, and
-maps; the compiler reads and evaluates that tree. There is no separate
-AST (abstract syntax tree) — the source *is* the tree. This is why
-macros (much later) are tractable, and why the final kata, an
-interpreter, needs no parser.
+**Code is data.** Source is nested lists, vectors and maps; there is
+no separate AST — the source *is* the tree. That is why the last kata,
+an interpreter, needs no parser.
 
-**Values are immutable.** A vector, map, or set, once constructed,
-cannot change. `assoc`, `conj`, and friends return *new* collections
-that structurally share most of their innards with the old (cheap —
-roughly O(log32 n); these are the *persistent* data structures, where
-"persistent" means the old version stays valid, nothing to do with
-disk). New to most coming from other languages, this removes a whole
-class of bug within a week.
+**Values are immutable.** A vector, map or set never changes once
+built. `assoc`, `conj` and friends return new collections that share
+structure with the old, so copying is cheap; these are the
+*persistent* data structures — the old version stays valid.
 
 **Functions are the abstraction.** Where other languages reach for a
-class, an object, or a loop, Clojure reaches for a function. State,
-when genuinely needed, lives in explicit reference types you
-*dereference* — read the current value out — and is the exception, not
-the default.
+class, an object or a loop, Clojure reaches for a function. State,
+when genuinely needed, lives in explicit references you *dereference*
+— read the current value out (§21) — and is the exception, not the
+default.
 
-**You are on a host.** Clojure runs on the JVM with its library
-ecosystem; *interop* — calling host methods directly — is one
-character of syntax away. You will barely need it; the standard library
-covers these katas.
-
-A note for the reader new to Clojure and to functional programming:
-the first few sections will feel slow. Fluency precedes speed. The
-katas are calibrated to that.
+**You are on a host.** Clojure runs on the JVM; a host call looks like
+`(Math/sqrt n)` (§16). Interop is rarely needed here; the standard
+library covers these katas.
 
 
 
-## 1. Syntax — the whole language in five minutes
+## 1. Syntax
 
 Everything is a prefix-form expression in parentheses (prefix = the
 operator comes first, then its arguments):
 
 ```clojure
 (+ 1 2)            ; => 3
-(println "hello")  ; => prints, returns nil
+(println "hello")  ; prints hello, returns nil
 ```
 
 The first thing inside the parens is a function (or a *special form* —
@@ -61,12 +54,15 @@ a primitive the compiler handles directly, like `if` — or a macro).
 The rest are arguments. No commas; whitespace separates. Commas, if you
 write them, are whitespace — sometimes used in maps for readability.
 
-Define a global with `def`, a function with `defn`:
+Define a global with `def`, a function with `defn`. A docstring is a
+string between the name and the argument vector:
 
 ```clojure
 (def pi 3.14159)
 
-(defn square [x]
+(defn square
+  "Multiplies x by itself."
+  [x]
   (* x x))
 
 (square 5)  ; => 25
@@ -83,13 +79,39 @@ the few places the syntax distinguishes structure from invocation.
 - `(comment ...)` a block of forms ignored on load, runnable in the
   REPL (the interactive Clojure prompt)
 
-There is no `return`. The value of any form is its last expression.
+There is no `return`: a function returns the value of the last
+expression in its body.
 
-> ⚠️ **Gotcha — truthiness.** `nil` and `false` are the *only* falsy
-> values. Everything else is truthy — including `0`, `""`, `[]`, and
-> `{}`. An empty collection is **not** falsy; test emptiness with
-> `(seq coll)` (nil when empty) or `empty?`. The single most common
-> newcomer bug.
+> **Truthiness.** `nil` and `false` are the *only* falsy values.
+> Everything else is truthy — including `0`, `""`, `[]`, and `{}`. An
+> empty collection is **not** falsy; test emptiness with `(seq coll)`
+> (nil when empty) or `empty?`.
+
+**Run it.** `just repl` starts a REPL from the repo root with `src`
+and `test` on the classpath (it runs `clj -M:test`, which adds line
+editing through rlwrap, or `clojure -M:test` without it); the prompt is
+`user=>`. Type a form, read its value. Load a kata and refer its
+functions with one line, and repeat that line after every edit to the
+file:
+
+```clojure
+(require '[katas.kata-01-fizzbuzz :refer [fizzbuzz]] :reload)
+```
+
+The REPL documents itself — these are the offline clojuredocs:
+
+```clojure
+(doc take)              ; docstring and argument lists
+(source take)           ; the source
+(dir clojure.string)    ; a namespace's public names
+(find-doc "separator")  ; every docstring containing the text
+(apropos "join")        ; every name containing the text
+```
+
+They live in `clojure.repl`; the REPL that `just repl` starts refers
+them into `user`. From any other namespace call `(clojure.repl/doc f)`.
+Any REPL client does the same three things: send a form, show its
+value, reload the namespace.
 
 
 
@@ -99,36 +121,37 @@ There is no `return`. The value of any form is its last expression.
 |---|---|---|
 | Long | `42` | 64-bit integer by default |
 | Double | `1.5` | double-precision float |
-| Ratio | `1/3` | exact rationals — they just work |
+| Ratio | `1/3` | exact rationals |
 | BigInt | `42N` | arbitrary precision |
 | String | `"hi"` | immutable |
 | Character | `\a` | a single character |
 | Boolean | `true` `false` | |
-| Nil | `nil` | absence of a value |
+| Nil | `nil` | absence of a value; `nil?` tests for it |
 | Keyword | `:foo` `:user/name` | interned; map keys and enum-like constants |
-| Symbol | `'foo` | a name; bare it is looked up, `'foo` quotes it as data |
+| Symbol | `foo` | a name; bare it is looked up, `'foo` quotes it so it stays a name (§20) |
 | Vector | `[1 2 3]` | indexed; `conj` appends to the end |
 | List | `'(1 2 3)` | linked; `conj` prepends; quoted, else `(1 2 3)` calls `1` |
-| Map | `{:a 1, :b 2}` | hash-map; keys can be any value |
-| Set | `#{1 2 3}` | hash-set |
+| Map | `{:a 1, :b 2}` | unordered; keys can be any value |
+| Set | `#{1 2 3}` | unordered; unique values |
 
-Ratios matter early: `(/ 9 5)` is `9/5`, exact, not `1.8`. Integer
-arithmetic that lands on an integer stays an integer (`(* 5/9 (- 212 32))`
-→ `100`, not `100.0000001`). Kata 2 depends on this.
+`+ - * /` take any number of arguments: `(- 10 3 2)` → `5`,
+`(* 2 3 4)` → `24`. Division of integers is exact: `(/ 9 3)` → `3`,
+but `(/ 2 3)` → `2/3`, a ratio, never `0.6666666666666666`. Ratio
+arithmetic that lands on a whole number yields a BigInt, printed with
+an `N`: `(* 2/3 (+ 4 5))` → `6N`. `(= 6 6N)` is true.
 
-Integer division comes in three pieces: `(quot 17 5)` → `3` (floor of
-the division), `(rem 17 5)` → `2` (remainder), `(mod 17 5)` → `2`
-(remainder, but with the sign of the divisor — `(mod -1 3)` → `2`).
-`(zero? (mod n d))` is the idiomatic "is `n` divisible by `d`?". Kata 1
-needs `mod`; the digit-arithmetic kata needs `quot`/`rem`.
+`(mod 17 5)` → `2`, the remainder. `(zero? (mod n d))` is the idiomatic
+"is `n` divisible by `d`?".
+
+`inc` and `dec` add and subtract one: `(inc 4)` → `5`, `(dec 4)` →
+`3`. The predicates `zero?`, `pos?`, `neg?`, `even?`, `odd?` test one
+number and return a boolean: `(even? 4)` → `true`.
 
 **Keywords as functions.** A keyword invoked on a map looks itself up:
 
 ```clojure
 (:name {:name "Ann", :role "engineer"})  ; => "Ann"
 ```
-
-That trick is everywhere in idiomatic Clojure. Memorise it.
 
 
 
@@ -143,14 +166,17 @@ That trick is everywhere in idiomatic Clojure. Memorise it.
 `when` is `if` with only a then-branch and an *implicit `do`*: the body
 is any number of expressions, evaluated in order, the last is the
 value, the rest run only for side effects (printing, mutation). `if`
-has no implicit `do` — each branch is a single expression. That is the
-usual reason to choose `when`.
+has no implicit `do` — each branch is a single expression; `(do a b
+c)` evaluates all three and has the value of `c`. That is the usual
+reason to choose `when`. `when-not` is `when` with the test negated.
 
 ```clojure
 (when (seq xs)
-  (println "got items")   ; side effect; value discarded
-  (first xs))             ; ← returned
+  (println "got items")
+  (first xs))
 ```
+
+The `println` runs for its effect; `(first xs)` is the value.
 
 `cond` for multi-way branching; `:else` is the conventional catch-all
 (just a truthy keyword):
@@ -158,33 +184,27 @@ usual reason to choose `when`.
 ```clojure
 (cond
   (zero? n) :zero
-  (pos? n)  :positive
-  :else     :negative)
+  (pos? n) :positive
+  :else :negative)
 ```
 
-`case` for compile-time-constant dispatch — an O(1) jump table, faster
-than a `cond` scan when applicable:
+`cond` returns `nil` if nothing matches.
 
-```clojure
-(case role
-  :admin            "all access"
-  (:guest :visitor) "anonymous"   ; a list label matches any element
-  "none")                         ; trailing default, no test value
-```
-
-`cond` returns `nil` if nothing matches; `case` with no match and no
-default **throws**.
-
-> ⚠️ **Gotcha — `case` labels are not evaluated.** `(case x, limit :hit,
-> :miss)` matches the *symbol* `limit`, not its value. If a branch's
-> match must be computed, use `cond`.
+`=` is value equality: variadic (`(= 1 1 1)` → `true`) and structural
+(`(= [1 2] '(1 2))` → `true` — sequential collections compare by
+contents; maps and sets likewise). It does not cross numeric
+categories: integers of any size are `=` (`(= 1 1N)` → `true`), but an
+integer never equals a float: `(= 1 1.0)` → `false`. `not=` is its
+negation. `not` negates any value: `(not nil)` → `true`, `(not 0)` →
+`false`.
 
 `and` and `or` short-circuit and return a *value*, not just a boolean.
 `(and a b c)` evaluates left to right and yields the first falsey value
 or, if none, the last value; `(or a b c)` yields the first truthy value
-or the last. So `(and (number? x) (pos? x))` is a guarded test, and
-`(or x default)` is "x unless it is nil/false". They are the building
-blocks of compound predicates throughout the katas.
+or the last. So `(and n (pos? n))` is a guarded test — `pos?` never
+sees a `nil` — and `(or x default)` is "x unless it is nil/false".
+They are the building blocks of compound predicates throughout the
+katas.
 
 
 
@@ -197,14 +217,14 @@ previous:
 (let [x 1
       y (+ x 2)
       z (* y 3)]
-  (+ x y z))   ; => 1 + 3 + 9 = 13
+  (+ x y z))   ; => 13
 ```
 
 *Destructure* — bind pieces of a collection by mirroring its shape — on
 the left of any binding, and in function parameters:
 
 ```clojure
-(let [[a b & rest] [1 2 3 4 5]]      ; a=1, b=2, rest=(3 4 5)
+(let [[a b & more] [1 2 3 4 5]]      ; a=1, b=2, more=(3 4 5)
   ...)
 
 (let [{:keys [name role]} {:name "Ann", :role "eng"}]
@@ -213,6 +233,10 @@ the left of any binding, and in function parameters:
 (defn greet [{:keys [name]}]          ; destructure a parameter
   (str "Hello, " name))
 ```
+
+A binding you must write but do not use is named `_`, or `_sku` when
+the name helps the reader — the convention for "ignored", and the
+linter does not flag it.
 
 
 
@@ -227,11 +251,17 @@ should usually call a higher-arity one rather than repeat logic:
   ([name] (str "Hello, " name)))
 ```
 
-Variadic with `&`:
+Variadic with `&` — the extra arguments arrive as a seq (`nil` when
+there are none):
 
 ```clojure
 (defn sum [& nums] (apply + nums))
+
+(sum 1 2 3)  ; => 6
 ```
+
+`apply` spreads a seq into positional arguments: `(apply + [1 2 3])`
+is `(+ 1 2 3)`.
 
 Anonymous functions, two forms:
 
@@ -247,10 +277,14 @@ Three rules, in order:
 3. Reach for `fn` for anything multi-form, or where naming the
    parameter aids the reader.
 
+> **`#(…)` is always a call.** The first element of its body is called:
+> `#([% %])` calls the vector with no arguments and throws `Wrong number
+> of args (0) passed to: clojure.lang.PersistentVector`. To return a
+> literal, use `fn`: `(fn [x] [x x])`.
+
 Functions are values: pass them, return them, store them. The standard
 library is built on *higher-order functions* (functions taking or
-returning functions). You will use them constantly — far more than the
-occasional callback in other languages.
+returning functions).
 
 
 
@@ -263,19 +297,23 @@ sequence functions work over all of them the same way.
 ```clojure
 (map inc [1 2 3])           ; => (2 3 4)
 (filter even? (range 10))   ; => (0 2 4 6 8)
+(remove even? (range 10))   ; => (1 3 5 7 9)
 (reduce + 0 [1 2 3 4])      ; => 10
-(reduce + [1 2 3 4])        ; => 10 (first element is the init)
+(reduce + [1 2 3 4])        ; => 10
 ```
 
-`reduce` is the fold: carry an accumulator across the seq. `(reduce f
-init coll)` — and `f` takes `[acc x]`. Most loops you would write in
-other languages are a `reduce` here.
+`remove` is `filter` with the predicate negated. `reduce` is the fold:
+carry an accumulator across the seq. `(reduce f init coll)` — and `f`
+takes `[acc x]`; without `init`, the first element is the initial
+accumulator. Most loops you would write in other languages are a
+`reduce` here.
 
 `range` is a lazy seq of integers: `(range 5)` → `(0 1 2 3 4)`,
-`(range 1 6)` → `(1 2 3 4 5)`, `(range 0 10 2)` → `(0 2 4 6 8)`.
+`(range 1 6)` → `(1 2 3 4 5)`, `(range 0 10 2)` → `(0 2 4 6 8)`;
+`(range 1 (inc n))` is 1..n inclusive.
 
-`for` is a list comprehension (build a seq by iterating bindings), not
-a loop:
+`for` is a list comprehension — it builds a lazy seq by iterating
+bindings — not a loop:
 
 ```clojure
 (for [i (range 5)
@@ -284,12 +322,11 @@ a loop:
 ```
 
 `:when` here is a *modifier clause* inside the bindings — it filters
-iterations (not the `when` macro of §3); `:let [...]` and `:while test`
-are siblings. `doseq` has the same shape but is for side effects and
-returns nil.
+iterations (not the `when` macro of §3); `(doc for)` lists the others.
+`doseq` has the same shape but is for side effects and returns nil.
 
 `vec` turns a seq into a vector; `into` pours one collection into
-another; `mapv`/`filterv` are eager vector-returning variants:
+another; `mapv` is the eager, vector-returning `map`:
 
 ```clojure
 (vec (map inc [1 2 3]))      ; => [2 3 4]
@@ -297,18 +334,94 @@ another; `mapv`/`filterv` are eager vector-returning variants:
 (into {} [[:a 1] [:b 2]])    ; => {:a 1, :b 2}
 ```
 
-`count`, `first`, `rest`, `last`, `take`, `drop`, `nth` round out the
-basics. `(nth v i)` indexes; `(map-indexed (fn [i x] …) xs)` pairs each
-element with its index.
+These round out the basics:
 
-> ⚠️ **Gotcha — laziness is invisible until it bites.** `(map f xs)`
-> returns a *lazy* seq; nothing is computed until something pulls on
-> it. You will not notice until a side effect inside a lazy `map`
-> mysteriously does not run. Force it with `doall`, or use the eager
-> `mapv`/`filterv`.
+```clojure
+(count [1 2 3])        ; => 3
+(first [1 2 3])        ; => 1
+(rest [1 2 3])         ; => (2 3)
+(last [1 2 3])         ; => 3
+(take 2 [1 2 3])       ; => (1 2)
+(drop 2 [1 2 3])       ; => (3)
+(nth [1 2 3] 1)        ; => 2
+(map-indexed (fn [i x] [i x]) [:a :b])   ; => ([0 :a] [1 :b])
+```
 
-You now have enough for the first kata: building a vector by mapping a
-multi-way decision over a range.
+`nth` is zero-based; `map-indexed` pairs each element with its index.
+
+> **Laziness.** `(map f xs)` returns a *lazy* seq; nothing is computed
+> until something pulls on it, so a side effect inside a lazy `map` may
+> not run. Force it with `doall`, or use the eager `mapv`. The converse
+> surprise: seqs over vectors and finite ranges are realised 32 elements
+> at a time, so `(first (map println [1 2 3]))` prints all three and
+> `map` looks eager. How many times a side effect inside `map` runs is
+> unspecified. Keep side effects out of `map`; use `doseq` for them.
+
+You now have enough for the first kata. Two more things to read before
+it: the test file, and what a failure looks like.
+
+**Reading a test file.** `just test 1` runs
+`test/katas/kata_01_fizzbuzz_test.clj`, whose header pulls three names
+from `clojure.test` and the function under test into scope:
+
+```clojure
+(ns katas.kata-01-fizzbuzz-test
+  (:require [clojure.test :refer [deftest is testing]]
+            [katas.kata-01-fizzbuzz :refer [fizzbuzz]]))
+```
+
+`deftest` names a test; `(is (= expected actual))` asserts, expected
+first; `testing` labels a group of assertions; `vector?` is true of a
+vector and nothing else. On the untouched stub the test at line 5
+fails like this:
+
+```text
+FAIL in katas.kata-01-fizzbuzz-test/empty-input (kata_01_fizzbuzz_test.clj:5)
+expected: []
+  actual: nil
+```
+
+The first line names the test, then the file and line of the failing
+`is`. `expected` is the literal from the test; `actual` is what your
+function returned — `nil` here because the stub still returns nil. A
+`testing` label or an `is` message prints between the header and
+`expected`. A predicate assertion such as `(is (vector? (fizzbuzz
+10)))` reports `(not (vector? nil))` as its actual.
+
+When the two sides partly agree, a `diff:` follows: `-` holds what only
+`expected` has and `+` what only `actual` has. For sequences this goes
+position by position, with `nil` where they agree; for maps it lists
+only the differing keys. Either line can be missing. When nothing lines
+up — an empty `expected`, an `actual` of `nil`, maps that differ at
+every key — there is no `diff:`; compare the two lines by eye. An
+element missing from a sequence shifts every later position, so trust
+only the first non-`nil` position.
+
+**Reading an ERROR.** If a file does not compile, no test runs: the run
+prints `Syntax error compiling at (katas/kata_NN_….clj:LINE:COL).` (or
+`reading source` for an unclosed form) and the message. That line is
+the location; ignore the `Full report at:` path.
+
+An `ERROR` block means an exception escaped. Its header names where it
+was thrown, often a Java file inside Clojure. Next comes
+`expected:`/`actual:`, or `Uncaught exception, not in assertion.` when
+it escaped outside an `is`; then the exception's class, its message and
+the stack. The first frame from your source (`kata_NN_….clj`, not
+`…_test.clj`) is the line that failed. If only the test file appears,
+the test called what your function returned — an unfinished stub
+returns `nil`. The messages that account for most errors:
+
+| Message | Meaning |
+|---|---|
+| `Unable to resolve symbol: x in this context` | compile error: `x` is misspelt, or defined below its first use (§15) |
+| `EOF while reading` | compile error: an unclosed `(`, `[` or `"` |
+| `class java.lang.String cannot be cast to class java.lang.Number` | arithmetic on a non-number; the first class is what you passed |
+| `class java.lang.Long cannot be cast to class clojure.lang.IFn` | a value used as a function: an extra pair of parentheses, or an unquoted list |
+| `Wrong number of args (2) passed to: …` | an arity mismatch; the function is named at the end |
+| `Cannot invoke "…" because "…" is null` | a `nil` was called as a function or passed to one that cannot take it: a stub's return value, or a lookup that found nothing |
+
+At the REPL `*e` holds the last exception; `(ex-data *e)` returns the
+data map attached to it, if any (§20).
 
 > ## 🥋 Complete kata 1 ("FizzBuzz") before continuing
 
@@ -316,12 +429,11 @@ multi-way decision over a range.
 
 ## 7. Numbers, arity, and exactness in practice
 
-Nothing new to learn — a checkpoint that consolidates §2 and §5. Kata 2
-is pure arithmetic: exact ratios so integer inputs stay integers
-(`(* c 9/5)`, never `1.8`), a multi-arity predicate whose one-argument
-form delegates to its three-argument form, and the chained comparison
-`(<= lo c hi)` (Clojure's comparison operators take any number of
-arguments and check the whole chain).
+A checkpoint on §2 and §5, plus one idiom: `<`, `<=`, `>` and `>=` take
+any number of arguments and check the whole chain: `(< 1 2 3)` →
+`true`, `(< 1 3 2)` → `false`. The tests check predicates with
+`true?`/`false?`, which accept only `true` and `false` themselves; a
+comparison returns exactly those.
 
 > ## 🥋 Complete kata 2 ("temperature") before continuing
 
@@ -329,9 +441,9 @@ arguments and check the whole chain).
 
 ## 8. Threading macros
 
-Nested expressions read inside-out, which is painful. The threading
-macros invert that. (No relation to concurrency threads — *threading*
-here is feeding a value step by step through a pipeline.)
+Nested expressions read inside-out. The threading macros invert that.
+(No relation to concurrency threads — *threading* here is feeding a
+value step by step through a pipeline.)
 
 `->` (thread-first) passes the value as the **first** argument to each
 form; `->>` (thread-last) as the **last**:
@@ -347,6 +459,9 @@ form; `->>` (thread-last) as the **last**:
      (take 5))                  ; => (0 4 16 36 64)
 ```
 
+A step that takes only the threaded value may be written bare:
+`(->> xs (map inc) vec)` is `(vec (map inc xs))`.
+
 Rule of thumb: data-shaped operations (`assoc`, `update`) go in `->`;
 sequence pipelines go in `->>`. Most pipelines you write are `->>`.
 
@@ -355,29 +470,58 @@ sequence pipelines go in `->>`. Most pipelines you write are `->>`.
 ## 9. Namespaces and `clojure.string`
 
 A namespace is a unit of code. The first form in every file declares it
-and its imports:
+and the namespaces it requires:
 
 ```clojure
-(ns katas.kata-03-word-frequencies
+(ns shop.report
   (:require [clojure.string :as str]))
 ```
 
-You then call `str/split`, `str/lower-case`, `str/join`, `str/blank?`,
-etc. The conventional alias for `clojure.string` is `str`; for
-`clojure.set`, `set`. Mismatched aliases across a codebase are a small
-but real friction — follow the convention.
+`:as` gives the required namespace a short alias: you then call
+`str/split`, `str/lower-case`, `str/upper-case`, `str/join`,
+`str/blank?`, `str/starts-with?`, etc. The conventional alias for
+`clojure.string` is `str`; follow it. `:refer` brings names in
+unqualified — the test files do this for `deftest`, `is` and `testing`,
+and for the functions under test:
 
-`(str/split s #"[^a-z0-9]+")` splits on a regex (a `#"..."` literal).
-Splitting a string that *starts* with a separator yields a leading
-empty string you must drop — `remove str/blank?` is the usual cleanup.
+```clojure
+(:require [clojure.test :refer [deftest is testing]])
+```
 
-`(str a b c)` is string concatenation and the universal "to string".
+`defn-` defines a function private to its namespace; the test files
+use it for helpers.
+
+`str/split` splits a string on a regex, written as a `#"..."` literal.
+In a regex, `[…]` matches one character from a class — `[0-9]` a digit,
+`[a-z]` a lower-case letter, `[0-9.]` a digit or a dot; one class may
+hold several ranges and characters. `[^…]` negates a class, and `+`
+means one or more of what precedes it:
+
+```clojure
+(str/split "2026-10-27" #"[^0-9]+")   ; => ["2026" "10" "27"]
+(str/split "--10.27" #"[^0-9]+")      ; => ["" "10" "27"]
+(str/split "" #"[^0-9]+")             ; => [""]
+```
+
+`str/split` can return empty strings: a leading one when the string
+starts with a separator, and `[""]` for the empty string itself.
+
+`(str a b c)` is string concatenation and the universal "to string";
+`str/join` does the same over a collection, with or without a
+separator:
+
+```clojure
+(str "a" 1 :k)            ; => "a1:k"
+(str/join ", " [1 2 3])   ; => "1, 2, 3"
+(str/join [\a \b])        ; => "ab"
+(str/lower-case "MiXeD")  ; => "mixed"
+```
 
 
 
 ## 10. Working with maps
 
-Maps are the workhorse. Learn these cold:
+The core map operations:
 
 ```clojure
 (get m :k)            ; lookup, nil if missing
@@ -409,14 +553,17 @@ Maps are the workhorse. Learn these cold:
 (frequencies "hello")   ; => {\h 1, \e 1, \l 2, \o 1}
 ```
 
-`fnil` wraps a function to substitute a default for a `nil` argument —
-the polite way to handle a missing key inside `update`/`update-in`:
-`(update-in m [:a :n] (fnil + 0) 3)` works whether or not `:a`/`:n`
-existed.
+A set is a function of its elements, returning the element or `nil`;
+`set` builds one from any collection, dropping duplicates:
 
-Every function here returns a **new** map. The input is never mutated —
-this is the whole point of kata 4 (build, read, and transform nested
-maps without ever changing one).
+```clojure
+(set [1 1 2])            ; => #{1 2}
+(set (keys {:a 1}))      ; => #{:a}
+(#{1 2} 2)               ; => 2
+(#{1 2} 5)               ; => nil
+```
+
+Every function here returns a **new** map. The input is never mutated.
 
 
 
@@ -433,78 +580,36 @@ A comparator is a 2-arg fn returning negative/zero/positive, or a 2-arg
 predicate like `<`/`>`.
 
 **Multi-key sorts.** `juxt` packs N functions into one that returns a
-vector of their results, and Clojure compares vectors element-wise — so
-`(sort-by (juxt :last :first) users)` sorts by last name, ties broken
-by first name.
+vector of their results, and vectors compare by length, then element
+by element — so `(sort-by (juxt :last :first) users)` sorts by last
+name, ties broken by first name.
 
 **Mixed directions.** Comparators have no per-key direction; negate a
-numeric key to flip it. `(comp - :score)` is "minus the :score"
-(`comp` composes functions right-to-left), giving descending score:
+numeric key to flip it. `(comp - :age)` is "minus the :age" (`comp`
+composes functions right-to-left), giving descending age:
 
 ```clojure
-(sort-by (juxt (comp - :score) :name) results)
-;; score descending, then name ascending — a fully deterministic order
+(sort-by (juxt (comp - :age) :last) users)
+;; age descending, then last name ascending — a fully deterministic order
 ```
 
 **Map entries.** Iterating a map yields `[k v]` pairs; `key` and `val`
 pull them apart. A map entry also compares `=` to the plain
 two-element vector `[k v]`, so you may return entries directly and test
-or destructure them as `[k v]` without converting. `(sort-by val
-(frequencies s))` sorts entries by count, and `(sort-by (juxt (comp -
-val) key) (frequencies s))` sorts them by count descending, ties broken
-by key ascending. That is exactly how kata 3's `top-n` (and, next, kata
-4's `leaderboard`) gets a fully deterministic order with a tie-breaker.
+or destructure them as `[k v]` without converting:
+
+```clojure
+(sort-by val {:b 2, :a 1})   ; => ([:a 1] [:b 2])
+```
 
 > ## 🥋 Complete kata 3 ("word frequencies") before continuing
 
 
 
-## 12. Type predicates
+## 12. Map surgery
 
-A *predicate* is a function returning truthy/falsey, named with a
-trailing `?` by convention. Each built-in data type from §2 has one;
-they answer "what is this?" and are the backbone of dispatching on
-heterogeneous data (the RPN evaluator, the macros kata, the capstone
-interpreter all turn on them).
-
-```clojure
-(number?  42)      (number?  1.5)    ; => true   (any numeric type)
-(integer? 42)      (integer? 1.5)    ; => true, then false
-(string?  "hi")                      ; => true
-(keyword? :k)      (symbol? 'x)      ; => true   (note 'x — quoted)
-(boolean? true)    (nil? nil)        ; => true
-(map?  {:a 1})     (set?  #{1})      ; => true
-(vector? [1 2])    (list? '(1 2))    ; => true
-(seq?  '(1 2))                       ; => true for a list or any seq
-(coll? [1])        (coll? {:a 1})    ; => true for any collection
-(fn?  inc)         (ifn? :k)         ; => true; ifn? also true of
-                                     ;   keywords, maps, sets, vectors
-                                     ;   — anything callable as a fn
-```
-
-Two that matter for the later katas:
-
-- **`seq?` vs `list?`.** `list?` is true only of an actual list;
-  `seq?` is true of a list *or* any lazy/seq value (what `map`,
-  `filter`, `rest` return). When you walk a form that may be either,
-  test `seq?`. `(seq coll)` (no `?`) is different again — it returns
-  `nil` for an empty collection, the idiomatic emptiness test from §1.
-- **Testing for an atom.** Reference types have no `atom?`. Use the
-  host check `(instance? clojure.lang.Atom x)` — `instance?` asks
-  whether `x` is of a given class, and is also how you test for a
-  record type you defined (`(instance? Closure x)`). You will need
-  both in the capstone.
-
-`zipmap` builds a map by pairing two seqs positionally — keys with
-values:
-
-```clojure
-(zipmap [:a :b :c] [1 2 3])      ; => {:a 1, :b 2, :c 3}
-(zipmap "IVX" [1 5 10])          ; => {\I 1, \V 5, \X 10}
-```
-
-It is the natural way to build a lookup table from parallel sequences,
-and to bind a list of parameter names to a list of argument values.
+Nothing new — a checkpoint. §10 is the toolkit for building, reading
+and updating nested maps without changing one; §11 orders the result.
 
 > ## 🥋 Complete kata 4 ("roster") before continuing
 
@@ -513,24 +618,42 @@ and to bind a list of parameter names to a list of argument values.
 ## 13. `group-by` and canonical forms
 
 ```clojure
-(group-by odd? [1 2 3 4 5])   ; => {true [1 3 5], false [2 4]}
-(group-by :role users)        ; => {:admin [...], :user [...]}
+(group-by odd? [1 2 3 4 5])        ; => {true [1 3 5], false [2 4]}
+(group-by count ["a" "bb" "c"])    ; => {1 ["a" "c"], 2 ["bb"]}
 ```
 
 `group-by` keeps each bucket's elements in input order, but the map it
-returns has **no** meaningful key order — `vals` over it is *not* in
-first-appearance order. When the result must follow the order in which
-each group first appeared, recover that yourself: pair each element
-with its index via `map-indexed` (§6), then `sort-by` each group's
-minimum index. `reduce`-ing a `{element → first-index}` map over the
-indexed input is one clean way.
+returns has no *guaranteed* key order. Maps of up to 8 keys happen to
+keep insertion order; larger ones do not — never rely on it.
+(`identity` returns its argument unchanged.)
+
+```clojure
+(keys (group-by identity (range 8)))   ; => (0 1 2 3 4 5 6 7)
+(keys (group-by identity (range 9)))   ; => (0 7 1 4 6 3 2 5 8)
+```
+
+`distinct` keeps the first occurrence of each value, in input order:
+
+```clojure
+(distinct [1 2 1 3 2])   ; => (1 2 3)
+```
 
 The pattern: pick a *canonical form* — one normalized representative
-that all equivalent inputs share, expressed as a key function — let
-`group-by` bucket by it, then post-process the buckets (`vals`,
-`filter`, sort). For anagrams the canonical form of a word is its
-sorted lower-cased letters: two words are anagrams iff their canonical
-forms are equal.
+that all equivalent inputs share, expressed as a key function — and
+let `group-by` bucket by it. Grouping integers by residue, for
+instance, uses the remainder as the canonical form; every number with
+the same remainder lands in the same bucket:
+
+```clojure
+(group-by #(mod % 3) (range 7))   ; => {0 [0 3 6], 1 [1 4], 2 [2 5]}
+```
+
+Strings are seqable: every sequence function accepts one as a seq of
+characters:
+
+```clojure
+(seq "ab")   ; => (\a \b)
+```
 
 > ## 🥋 Complete kata 5 ("anagrams") before continuing
 
@@ -540,25 +663,23 @@ forms are equal.
 
 ```clojure
 (partition 3 [1 2 3 4 5 6])         ; => ((1 2 3) (4 5 6))
-(partition 2 1 [1 2 3 4])           ; => ((1 2) (2 3) (3 4)) overlapping
-(partition 2 1 [0] [1 2 3])         ; => ((1 2) (2 3) (3 0))  4-arg:
-                                    ;   [0] pads a short final window
+(partition 2 1 [1 2 3 4])           ; => ((1 2) (2 3) (3 4))
 (partition-by odd? [1 1 2 3 3 3])   ; => ((1 1) (2) (3 3 3))
-(mapcat reverse [[1 2] [3 4]])      ; => (2 1 4 3)  map then concat
-(interpose "," ["a" "b" "c"])       ; => ("a" "," "b" "," "c")
+(mapcat reverse [[1 2] [3 4]])      ; => (2 1 4 3)
 (repeat 3 :x)                       ; => (:x :x :x)
-(repeat :x)                         ; => infinite lazy (:x :x :x …)
-(cycle [1 2 3])                     ; => infinite (1 2 3 1 2 3 …)
-(iterate inc 0)                     ; => infinite (0 1 2 3 …)
+(take 4 (iterate inc 0))            ; => (0 1 2 3)
 ```
 
-`partition-by f` splits a seq into maximal runs equal under `f`. With
-`identity` — the function that returns its argument unchanged — `f` is
-"the element itself", so `(partition-by identity s)` groups consecutive
-equal elements: run-length encoding falls straight out of it. `mapcat`
-is `map` then `concat`: ideal when each input yields zero or more
-outputs (decoding a run into N copies via `repeat`). Design
-`encode`/`decode` as a matched pair so they round-trip.
+`partition` chunks a seq into groups of n; with a step of 1 the groups
+overlap. `partition-by f` starts a new group each time `(f x)` changes.
+
+`mapcat` is `map` then `concat`: use it when each input yields zero or
+more outputs. `repeat` makes n copies of a value; `iterate` is the
+infinite seq `x`, `(f x)`, `(f (f x))`, …
+
+```clojure
+(mapcat (fn [x] [x (* 10 x)]) [1 2])   ; => (1 10 2 20)
+```
 
 > ## 🥋 Complete kata 6 ("run-length encoding") before continuing
 
@@ -566,15 +687,16 @@ outputs (decoding a run into N copies via `repeat`). Design
 
 ## 15. Reading an unfamiliar namespace, and the REPL as an instrument
 
-This is the section the north star turns on: most of your real work in
-Clojure is reading code someone else wrote and changing it safely. No
-new syntax — a method.
+No new syntax — a method for reading, and safely changing, code you
+did not write.
 
 **Read a namespace top-down.** The `ns` form tells you its
-dependencies and aliases. Then read the `def`/`defn` forms in order; a
-file is usually written so earlier definitions are used by later ones.
-For each function, the *data shape* it builds or consumes is the thing
-to pin down first — find one concrete example (a docstring, a test, a
+dependencies and aliases. Then read the `def`/`defn` forms in order.
+Definitions resolve top-down: a name must be defined above its first
+use or the compiler reports `Unable to resolve symbol`; `(declare
+name)` reserves a name for a definition further down. For each
+function, the *data shape* it builds or consumes is the thing to pin
+down first — find one concrete example (a docstring, a test, a
 literal) and hold it in your head while you read.
 
 **The data shape is the contract.** Clojure APIs are plain maps,
@@ -588,20 +710,16 @@ out. Read the test before the implementation. In this dojo `just test
 N` is that oracle; a failing assertion names the exact discrepancy.
 
 **The REPL is how you investigate, not just run.** A REPL evaluates one
-form at a time against the live namespace. The loop for understanding
-or extending unfamiliar code:
+form at a time against the live namespace; the commands — `just repl`,
+`require` with `:reload`, `doc`, `source`, `dir` — are in §1. The loop
+for understanding or extending unfamiliar code:
 
 - evaluate a function on a small literal input and look at the value;
-- `(doc f)` and `(source f)` print a function's docstring and its
-  source; `(dir some.ns)` lists its public vars;
 - build the input data shape by hand, transform it step by step, and
   watch each intermediate;
 - when a pipeline is wrong, paste it into the REPL and peel `->>`
   stages off the end until the output is right — the stage you removed
   is the bug.
-
-No specific editor or REPL client is assumed; any will do. The skill is
-the same everywhere: form in, value out, iterate.
 
 **Changing inherited code.** Match the surrounding style. Keep the data
 shape stable so existing callers and tests keep working — maps that
@@ -609,19 +727,13 @@ shape stable so existing callers and tests keep working — maps that
 break everyone. Make the failing test pass without rewriting code that
 already works.
 
-The next kata is not a blank stub: it is a small, working — but
-incomplete and subtly wrong — namespace, the kind you inherit on day
-one. Read it with the method above. One function has a defect the tests
-expose (a boundary condition); one function is unimplemented. Fix and
-extend in the existing style; leave the correct code alone.
-
 > ## 🥋 Complete kata 7 ("inventory") before continuing
 
 
 
 ## 16. Laziness in earnest
 
-You have *consumed* lazy seqs since kata 1. Now *build* one.
+So far you have consumed lazy seqs; now build one.
 
 A lazy seq computes its elements only when pulled. The simplest source
 is a filter over an infinite generator:
@@ -631,41 +743,49 @@ is a filter over an infinite generator:
 (take 5 evens)                       ; => (0 2 4 6 8)
 ```
 
-`(range)` with no argument is an infinite lazy seq; so is `(iterate inc
-2)` — `2 3 4 5 …`. Filtering or mapping an infinite seq stays lazy and
-infinite. `take`, `take-while`, and `nth` pull a finite prefix:
+`(range)` with no argument is an infinite lazy seq; so is `(iterate
+#(* 2 %) 1)` — `1 2 4 8 …`. Filtering or mapping an infinite seq stays
+lazy and infinite. `take`, `take-while`, and `nth` pull a finite
+prefix:
 
 ```clojure
-(take-while #(< % 30) (filter even? (range)))   ; => (0 2 4 … 28)
+(take-while #(< % 12) evens)   ; => (0 2 4 6 8 10)
+(nth evens 100)                ; => 200
 ```
 
-When you need explicit control, `lazy-seq` wraps a body so it is not
-evaluated until forced, and `cons` prepends one element to a (possibly
-deferred) rest:
+Anything that pulls every element of an infinite seq — `count`, `vec`,
+`last`, or the REPL printing it — never returns; look at `(take 5
+evens)`, not bare `evens`. A REPL or `just test` that goes silent is
+stuck in such a pull, or in a `loop` whose stop test never holds.
+Ctrl-C ends it; rerun `just repl` and reload, since its definitions are
+gone. `just test N test-name` narrows a run to one test.
+
+Three predicates over a seq: `(some pred coll)` returns the first
+truthy `(pred x)`, or `nil` when there is none; `(not-any? pred coll)`
+is its negation (true iff `pred` holds for no element); `(every? pred
+coll)` is the universal.
 
 ```clojure
-(defn naturals-from [n]
-  (lazy-seq (cons n (naturals-from (inc n)))))
-
-(take 5 (naturals-from 1))   ; => (1 2 3 4 5)
+(some even? [1 3 4])       ; => true
+(some even? [1 3 5])       ; => nil
+(not-any? even? [1 3 5])   ; => true
+(every? odd? [1 3 5])      ; => true
 ```
 
-That recursion never overflows the stack: `lazy-seq` defers the
-recursive call until the next element is demanded. State the recursion
-needs rides along as function arguments. A `def` may hold an infinite
-lazy seq directly — handy for "the seq of all primes". The kata's
-`primes` is exactly that; `nth-prime` is a lookup into it, not a
-second search.
+`not-any?` and `every?` return exactly `true` or `false`; `some` does
+not. Keep a predicate (a `?` function) strictly boolean — the tests
+compare with `true?`/`false?`, and `nil` is not `false`.
 
-For the `prime?` predicate you need to ask "is there any divisor?".
-`(some pred coll)` returns the first truthy `(pred x)` or `nil`;
-`(not-any? pred coll)` is its negation (true iff `pred` holds for
-none); `(every? pred coll)` is the universal. So "n is prime" is
-`not-any?` a divisor in the candidate range — and the range need only
-run to √n, because a composite always has a factor at or below its
-square root (`(range 2 (inc (long (Math/sqrt n))))`; `Math/sqrt` is one
-of the rare host-interop calls from §0). Equivalently, `empty?` over a
-`filter` of the divisors says the same thing.
+A search for a divisor of `n` can stop at √n: a composite number
+always has a factor at or below its square root. `(Math/sqrt n)` is
+host interop (§0): `Class/method` calls a static method of a host
+class. It returns a double; `(long x)` truncates a double to an
+integer:
+
+```clojure
+(Math/sqrt 10)          ; => 3.1622776601683795
+(long (Math/sqrt 10))   ; => 3
+```
 
 > ## 🥋 Complete kata 8 ("primes") before continuing
 
@@ -680,24 +800,34 @@ itself) with new binding values:
 
 ```clojure
 (defn factorial [n]
-  (loop [n   n
+  (loop [n n
          acc 1]
     (if (zero? n)
       acc
       (recur (dec n) (* acc n)))))
+
+(factorial 5)    ; => 120
+(factorial 20)   ; => 2432902008176640000
 ```
 
-`recur` must be in tail position; the compiler errors otherwise — by
-design, since the alternative is a stack overflow. `loop` establishes
-the rebindable names and their initial values; each `recur` supplies
-the next values; an `if`/`cond` decides when to stop and return the
-accumulator.
+`recur` must be in tail position; the compiler errors otherwise —
+by design, since the alternative is a stack overflow. `loop`
+establishes the rebindable names and their initial values; each
+`recur` supplies the next values; an `if`/`cond` decides when to stop
+and return the accumulator. `zero?`, `nil?` (true only of `nil`) and
+`empty?` are the usual stopping tests.
+
+Integer division comes in three pieces: `(quot 17 5)` → `3` (integer
+quotient, truncated toward zero), `(rem 17 5)` → `2` (remainder, sign
+of the dividend), `(mod 17 5)` → `2` (remainder, sign of the divisor).
+The difference shows only with negatives: `(quot -17 5)` → `-3`,
+`(rem -17 5)` → `-2`, `(mod -17 5)` → `3`.
 
 Prefer `reduce` or a higher-order function when the shape fits. Reach
-for `loop`/`recur` when you have a genuine accumulator that does not
-fit a fold — integer-arithmetic digit problems (`quot`, `rem`), or an
-iteration whose length is data-dependent (a Collatz chain). Deep
-iteration must use `recur`, not self-calls, to avoid overflowing.
+for `loop`/`recur` when the iteration carries several running values
+or its length depends on the data — Euclid's gcd, which replaces
+`[a b]` by `[b (rem a b)]` until `b` is zero. Deep iteration must use
+`recur`, not self-calls, to avoid overflowing the stack.
 
 > ## 🥋 Complete kata 9 ("digits") before continuing
 
@@ -705,14 +835,45 @@ iteration must use `recur`, not self-calls, to avoid overflowing.
 
 ## 18. Table-driven algorithms
 
-A `reduce` (or a `loop`) over an ordered table of `[value, output]`
-rows replaces a long `cond` ladder. Roman numerals are the archetype:
-an ordered table that *already includes* the subtractive forms
-(`["CM" 900]`, `["IV" 4]`, …), walked greedily — at each step, the
-largest row that still fits. The inverse direction reads two adjacent
-symbols at a time (`partition 2 1`) and subtracts when a smaller
-precedes a larger. Design the two directions to round-trip across the
-whole range.
+A `reduce` (or a `loop`) over an ordered table of `[value output]`
+rows replaces a long `cond` ladder: each row is tried in order, and
+the data decides how many times it applies. Making change from an
+ordered coin table:
+
+```clojure
+(def coins [[25 :quarter] [10 :dime] [5 :nickel] [1 :penny]])
+
+(defn change [amount]
+  (first (reduce (fn [[acc n] [value coin]]
+                   [(into acc (repeat (quot n value) coin)) (rem n value)])
+                 [[] amount]
+                 coins)))
+
+(change 68)   ; => [:quarter :quarter :dime :nickel :penny :penny :penny]
+```
+
+The accumulator carries two things — the output so far and what is
+left to convert — so it is a pair, destructured on the way in and
+rebuilt on the way out. Rows are value-first, largest first; the
+greedy walk is correct only because the table is ordered.
+
+`partition` with a step of 1 pairs each element with its successor; the
+4-argument form pads a short final window so the last element still
+gets one:
+
+```clojure
+(partition 2 1 [:a :b :c])          ; => ((:a :b) (:b :c))
+(partition 2 1 [:end] [:a :b :c])   ; => ((:a :b) (:b :c) (:c :end))
+```
+
+`zipmap` builds a map by pairing two seqs positionally — keys with
+values:
+
+```clojure
+(zipmap [:a :b :c] [1 2 3])   ; => {:a 1, :b 2, :c 3}
+```
+
+It is the natural way to build a lookup table from parallel sequences.
 
 > ## 🥋 Complete kata 10 ("roman numerals") before continuing
 
@@ -728,73 +889,136 @@ item, or two, or three.
 ```clojure
 (defn run [cmds]
   (loop [cmds cmds
-         pos  0
+         pos 0
          path [0]]
     (let [[c & more] cmds]
       (cond
-        (nil? c)       path
-        (= c :fwd)     (recur more (inc pos) (conj path (inc pos)))
-        (= c :goto)    (let [[target & more2] more]   ; consumes TWO
-                         (recur more2 target (conj path target)))))))
+        (nil? c) path
+        (= c :fwd) (recur more (inc pos) (conj path (inc pos)))
+        (= c :goto) (let [[target & more2] more]   ; consumes TWO
+                      (recur more2 target (conj path target)))))))
+
+(run [:fwd :fwd :goto 7 :fwd])   ; => [0 1 2 7 8]
 ```
 
-Most branches `recur` with `more` — one item consumed. The `:goto`
-branch destructures one more value off the front and `recur`s with
-`more2` — two consumed. A `reduce` over `cmds` cannot express that;
-the state rides along as loop bindings; `(nil? c)` on the empty input
-terminates and returns the accumulator.
-
-Not every state machine ends when its input runs out: some terminate on
-a *counter* — a fixed number of steps (e.g. exactly ten frames) — and
-consume whatever input remains as lookahead rather than as new steps.
-
-Bowling is exactly this: a frame consumes one roll on a strike, two
-otherwise, and the bonus reaches *forward* into later rolls. Walk
-exactly ten frames; bonus rolls are scored as bonus, not as an
-eleventh frame.
+The `:fwd` branch `recur`s with `more` — one item consumed; the
+`:goto` branch destructures one more value off the front and `recur`s
+with `more2` — two consumed. A `reduce` sees one item per step, so it
+can follow this only by carrying a mode flag in its accumulator; `loop`
+takes what it needs directly. `(nil? c)` on the empty input terminates
+and returns the accumulator.
 
 > ## 🥋 Complete kata 11 ("bowling") before continuing
 
 
 
-## 20. Dispatch tables and structured errors
+## 20. Type predicates, dispatch tables and structured errors
+
+A *predicate* is a function named with a trailing `?` by convention;
+the core ones return exactly `true` or `false` (§16). Each built-in
+data type from §2 has one; they answer "what is this?" and are the
+backbone of dispatching on heterogeneous data.
+
+```clojure
+(number?  42)      (number?  1.5)    ; => true   (any numeric type)
+(integer? 42)      (integer? 1.5)    ; => true, then false
+(string?  "hi")    (symbol? 'x)      ; => true   (note 'x — quoted)
+(fn?  inc)         (fn? :k)          ; => true, then false
+```
+
+**`if-let` and `when-let`** bind one binding form — a name, or a
+destructuring pattern (§4) — to a test's value and branch on it; the
+bindings are in scope only in the truthy branch. Exactly one binding
+pair is allowed.
+
+```clojure
+(if-let [x (first [4 5])] (inc x) :empty)   ; => 5
+(if-let [x (first [])] (inc x) :empty)      ; => :empty
+(when-let [x (first [4 5])] (* x 10))       ; => 40
+(when-let [x (first [])] (* x 10))          ; => nil
+```
+
+**Symbols, keywords and quote.** A keyword `:foo` evaluates to itself.
+A symbol `foo` is a name: evaluated, it is looked up; quoted, `'foo`,
+it stays a symbol — data you can compare, store, and use as a map key.
+Quote applies to any form: `'(1 2)` is a list, `'{x 10}` a map keyed by
+the symbol `x`. `'foo` is reader shorthand for `(quote foo)`, the form
+test output prints.
+
+```clojure
+(fn? +)            ; => true    the function
+(fn? '+)           ; => false   the name of the function
+(get '{x 10} 'x)   ; => 10
+```
+
+`case` dispatches on compile-time constants — constant-time, unlike a
+`cond` scan. A list label matches any of its elements; a trailing
+single form is the default; with no match and no default, `case`
+**throws**:
+
+```clojure
+(case role
+  :admin "all access"
+  (:guest :visitor) "anonymous"
+  "none")
+```
+
+> **`case` labels are not evaluated.** `(case x, limit :hit, :miss)`
+> matches the *symbol* `limit`, not its value. If a branch's match must
+> be computed, use `cond`.
 
 **A map of functions is a dispatch table.** Before any heavier
 polymorphism, notice that a map from a key to a function is often all
 you need:
 
 ```clojure
-(def ops {'+ +, '- -, '* *, '/ /})
-((ops '+) 2 3)        ; => 5
-(if-let [f (ops sym)] (f a b) (handle-unknown sym))
+(def hello {:en #(str "Hello, " %), :fr #(str "Bonjour, " %)})
+
+((hello :fr) "Ann")   ; => "Bonjour, Ann"
+
+(if-let [f (hello lang)]
+  (f who)
+  (throw (ex-info "unknown language" {:lang lang})))
 ```
 
-It composes with `reduce` naturally: thread an accumulator (here, a
-stack — `conj` pushes, `peek` reads the top, `pop` returns the rest)
-through a token sequence, looking up each operator in the table. That
-is the entire RPN evaluator.
+A miss returns `nil`, so `if-let` is the natural guard.
+
+**A vector is a stack.** `conj` pushes, `peek` reads the top, `pop`
+drops it:
+
+```clojure
+(conj [1 2] 3)   ; => [1 2 3]
+(peek [1 2 3])   ; => 3
+(pop [1 2 3])    ; => [1 2]
+(peek [])        ; => nil
+(pop [])         ; throws IllegalStateException
+```
 
 **Structured errors with `ex-info`.** You almost never define a custom
 exception class in Clojure. `ex-info` attaches an arbitrary data map to
 an exception; the consumer matches on a key in it, never on the message
-string:
+string. `throw` raises; `try` wraps a body and `catch` names the
+exception class and a binding for it:
 
 ```clojure
-(throw (ex-info "stack underflow" {:type :stack-underflow}))
+(defn fetch [m k]
+  (if (contains? m k)
+    (get m k)
+    (throw (ex-info "missing key" {:type :missing-key, :key k}))))
 
-;; elsewhere
-(catch clojure.lang.ExceptionInfo e
-  (case (:type (ex-data e)) ...))
+(try
+  (fetch {:a 1} :b)
+  (catch clojure.lang.ExceptionInfo e
+    (ex-data e)))   ; => {:type :missing-key, :key :b}
 ```
 
-A note on the tests. Most use `(is (= expected actual))` — plain
-equality. A few use matcher-combinators: `(is (match? shape actual))`
-matches a map *partially* (extra keys in the actual value are fine),
-and `(is (thrown-match? ExClass data-shape expr))` asserts both that
-the form throws and that `ex-data` matches the given shape. Plain `=`
-requires exact equality; `match?` is for asserting on `ex-data` or on
-data that may carry more than the test pins down. Use whichever says
-what you mean.
+**A note on the tests.** Most use `(is (= expected actual))` — plain
+equality. A few use matcher-combinators' `(is (thrown-match? ExClass
+data-shape expr))`: it asserts that the form throws and that its
+`ex-data` matches the shape partially — extra keys in the actual data
+are fine. On a mismatch, `actual:` marks each differing value as
+`(mismatch (expected …) (actual …))`; when the form throws nothing it
+reads `the expected exception wasn't thrown`.
 
 > ## 🥋 Complete kata 12 ("RPN") before continuing
 
@@ -809,14 +1033,14 @@ values over time — is an explicit reference you `deref`.
 
 ```clojure
 (def counter (atom 0))
-(deref counter)            ; => 0
-@counter                   ; same thing
-(swap! counter inc)        ; replace with (inc current), atomically; returns new
-(swap! counter + 10)       ; replace with (+ current 10)
-(reset! counter 100)       ; replace unconditionally
+(deref counter)        ; => 0
+@counter               ; => 0    reader shorthand for deref
+(swap! counter inc)    ; => 1    replaces with (inc current), atomically
+(swap! counter + 10)   ; => 11   replaces with (+ current 10)
+(reset! counter 100)   ; => 100  replaces unconditionally; returns new
 ```
 
-> ⚠️ **Gotcha — `swap!` retries, so its function must be pure.** The
+> **Gotcha — `swap!` retries, so its function must be pure.** The
 > function you pass to `swap!` can run **more than once** (it is retried
 > under contention — another thread updated the same atom). No I/O, no
 > side effects, no `reset!`-after-`deref` inside it. The read *and* the
@@ -824,45 +1048,43 @@ values over time — is an explicit reference you `deref`.
 
 ```clojure
 ;; WRONG — read and write are two separate steps; loses updates
-(reset! cache (assoc @cache k v))
+(reset! scores (assoc @scores player pts))
 
 ;; RIGHT — read+update is one atomic step
-(swap! cache assoc k v)
+(swap! scores assoc player pts)
 ```
 
 That bug — `deref`, compute, `reset!` — is the single most common state
-bug in real Clojure. The next kata is again inherited code (not a blank
-stub): a working account whose `deposit!` is written the wrong way and
-fails a concurrency test until you move its append inside `swap!`. It
-also leaves a function for you to implement. Use the §15 method: read
-the correct functions for the data shape and house style; fix the one
-that is wrong; fill in the missing one; do not disturb what works.
+bug in real Clojure.
 
-**Derive state, don't mutate it.** The deeper payoff of an atom is *not*
-to mutate a value in place but to make a derived value cheap to
-reconstruct from a record of what happened. Keep an append-only *log of
-events* and `reduce` a pure step function over it to recover the current
-state on demand — *event sourcing* in one sentence, and the same
-`reduce`-with-accumulator from §20 (RPN), now over a domain log instead
-of a token stream. The pure core is two functions: `apply-event`
-(`[state event] → state`, the same `[acc x]` shape a `reduce` step
-always has) and `replay` (a `reduce` of `apply-event` over the events,
-from the empty state). Neither touches an atom — they are pure and
-testable on plain vectors. The atom is then only a thin façade: it holds
-**the event log and nothing else**, and the one mutating step appends a
-single event in **one `swap!`** — exactly the read+update-together
-discipline above, applied to log growth rather than to a counter. The
-derived state is never stored: it is `(replay log)`, recomputed on
-demand, so it can never drift from the events. Rejection leaves the log
-— and therefore every projection of it — untouched: a malformed amount
-is checked *before* the `swap!`, and a check that needs the live state
-(an over-withdrawal) lives *inside* the swap function and `throw`s
-there, which aborts the `swap!` without committing. The bank account is
-built exactly
-this way: the atom holds only `:history` (the event log); `balance` is
-the projection `(replay history)`, not a field that is mutated; and
-`apply-event`/`replay` are public so you can verify the projection
-directly.
+**Threads.** `(future body)` runs `body` on another thread and returns
+a reference; `deref`/`@` on it blocks until the body has finished and
+yields its value. `(run! f coll)` calls `f` on each element for its
+side effects and returns `nil` — `doseq` as a function. `for` is lazy
+(§6), so a `for` that creates futures must be wrapped in `doall`, or
+no future starts until something pulls on the seq:
+
+```clojure
+(def f (future (+ 1 2)))
+@f                                                       ; => 3
+(def tasks (doall (for [i (range 3)] (future (* i i)))))
+(map deref tasks)                                        ; => (0 1 4)
+(run! deref tasks)                                       ; => nil
+```
+
+The concurrency tests fire hundreds of futures at one atom and wait
+for all of them.
+
+A function passed to `swap!` may `throw`; the exception propagates and
+the atom keeps its value:
+
+```clojure
+(def cap (atom 3))
+(swap! cap (fn [n]
+             (if (< n 3) (inc n) (throw (ex-info "full" {:n n})))))
+;; throws; nothing was committed
+@cap   ; => 3
+```
 
 > ## 🥋 Complete kata 13 ("bank account") before continuing
 
@@ -883,12 +1105,15 @@ without exposing the state:
 (c) (c) (c)   ; => 1, then 2, then 3 — n is private to c
 ```
 
-`memoize` is this pattern: wrap `f`, keep a private `{args → result}`
-cache in an atom, compute once per distinct argument list. Two
-subtleties the tests pin down: a *variadic* returned fn (`[& args]`,
-key on the whole `args` vector) supports any arity; and the cache must
-store falsey results too, so `contains?` on the cache — not the truthy-
-ness of the cached value — decides whether to recompute.
+A rest parameter `& args` is a seq, and `nil` for a zero-argument call
+(§5); both are valid map keys.
+
+`(constantly v)` returns a function that ignores its arguments and
+returns `v` — a trivially cheap `f` for a test:
+
+```clojure
+((constantly 7) 1 2)   ; => 7
+```
 
 > ## 🥋 Complete kata 14 ("my-memoize") before continuing
 
@@ -899,52 +1124,79 @@ ness of the cached value — decides whether to recompute.
 Two complementary tools, open along different axes.
 
 **Protocols** group methods by *type*: a closed set of methods, an open
-set of types implementing them — like an interface, but you can extend
-types you do not own.
+set of types implementing them — like an interface, except
+`extend-protocol` adds an implementation to a type after the fact,
+including types you do not own (a `String`, a host class), without
+touching its source.
 
 ```clojure
-(defprotocol Shape
-  (area [s])
-  (perimeter [s]))
+(defprotocol Describable
+  (summary [x]))
 
-(defrecord Circle [r]
-  Shape
-    (area [_] (* Math/PI r r))
-    (perimeter [_] (* 2 Math/PI r)))
+(defrecord Book [title pages]
+  Describable
+    (summary [_] (str title ", " pages " pp")))
 
-(area (->Circle 3))   ; => 28.27…
+(summary (->Book "SICP" 657))   ; => "SICP, 657 pp"
 ```
 
-`defrecord` generates a positional constructor `->Circle` and a
-keyword one `map->Circle`. Records are maps underneath — `assoc` on
-them, keyword-lookup them.
+Inside a method body the record's fields are plain locals — `title`
+and `pages` above. The method's first parameter is the record itself;
+it is `_` here because the fields are already in scope.
+
+`defrecord` generates a positional constructor, `->Book`. Records
+behave as maps — keyword-lookup them. The record's name is its class,
+and `instance?` asks whether a value is of a given class:
+
+```clojure
+(:pages (->Book "SICP" 657))           ; => 657
+(instance? Book (->Book "SICP" 657))   ; => true
+```
 
 **Multimethods** dispatch on an arbitrary function of the arguments:
 open set of methods *and* of types — most flexible, slightly slower.
 
 ```clojure
-(defmulti describe :kind)                ; dispatch fn = (:kind arg)
-(defmethod describe :circle [{:keys [r]}] (str "circle r " r))
-(defmethod describe :default [{:keys [kind]}] (str "unknown: " kind))
+(defmulti price :tier)                 ; dispatch fn = (:tier arg)
+(defmethod price :member [{:keys [base]}] (* 0.9 base))
+(defmethod price :default [{:keys [base]}] base)
+
+(price {:tier :member, :base 100})   ; => 90.0
+(price {:tier :guest, :base 100})    ; => 100
 ```
+
+`(methods price)` maps each dispatch value to its method — here
+`:member` and `:default`.
+
+A static field reads with the same `Class/member` syntax as §16's
+static method: `Math/PI` is `3.141592653589793`.
 
 **Which:** implementations cluster around a *type* → protocol (faster,
 easier to navigate); around a *behaviour* keyed by data, not a host
-type → multimethod; hierarchical dispatch → only multimethods. Adding a
-type on the protocol axis means a whole new record; on the multimethod
-axis, one more `defmethod`. That asymmetry is the kata.
+type → multimethod. Adding a type costs one implementation on either
+axis: a `defrecord` body (or `extend-protocol` for a type you do not
+own) versus one `defmethod`. Adding an operation: a new method in an
+existing protocol means editing the `defprotocol` and every implementer
+— a missing one fails at call time; a new protocol extended to each
+type, like a new `defmulti` with its `defmethod`s, leaves existing code
+untouched.
 
 **Caveat:** most real Clojure uses plain maps and never reaches for
 `defrecord` — maps compose with the whole library, grow fields without
 breaking callers, survive REPL reloads. Reach for a record when you
-genuinely need protocol dispatch on a named type. This kata exists so
-you have used the tool and felt the tradeoff.
+genuinely need protocol dispatch on a named type.
+
+Reloading a namespace redefines its protocols and record classes; a
+record built before the reload no longer satisfies the protocol:
+`No implementation of method: :summary of protocol: #'user/Describable
+found for class: user.Book`. Rebuild such values after every
+`:reload`.
 
 > ## 🥋 Complete kata 15 ("shapes") before continuing
 
 
 
-## 24. Macros — code as data, cashed in
+## 24. Macros
 
 A macro runs at *compile time* and returns a form to be compiled in its
 place. Because source is just nested lists, that form is ordinary data
@@ -977,40 +1229,52 @@ caller's name:
 ```
 
 **Recursive expansion.** A macro may call itself; each step happens at
-compile time, leaving a flat nested form. When a macro takes a
-*structured* input — a bindings vector, a parenthesised arithmetic
-form — destructure that input as data and recurse on the rest. The §12
-type predicates are how you tell which case you are in: `vector?` to
-validate a bindings vector, `list?` to decide whether a form is a
-composite to rewrite or an atom to emit as-is. Validate shape at
-expansion time and `(throw (IllegalArgumentException. "…"))` on misuse;
-the compiler will wrap that, so a test asserts on the *cause*.
-
-A variadic short-circuiting `and` is the shape in miniature: a base
-arity, a recursive arity that destructures the head off and self-calls
-on the rest, spliced back in with `~@`, with a `gensym`ed binding so it
-evaluates each argument once without capturing a caller's name.
+compile time, leaving a flat nested form. To reject misuse, throw while
+expanding: `(IllegalArgumentException. "…")` calls a host constructor,
+`(ClassName. args)`. The compiler wraps an exception thrown during
+expansion in one of its own, so a test digs for the *cause*:
+`(.getCause t)` is instance interop, `(.method object args)`, and the
+`^Throwable` before a parameter is a type hint naming the class whose
+method to call — read past it. A macro that throws, or expands to code
+that does not compile, breaks the test file itself: `just test N`
+prints `Syntax error macroexpanding <macro> at (<test file>:line:col)`
+and runs nothing. Find that call in the test file and `macroexpand-1`
+it at the REPL.
 
 ```clojure
-(defmacro my-and
-  ([] true)
+(defmacro my->
   ([x] x)
-  ([x & more] `(let [v# ~x] (if v# (my-and ~@more) v#))))
+  ([x form & more] `(my-> (~(first form) ~x ~@(rest form)) ~@more)))
 
-(macroexpand-1 '(my-and a b c))
-;; => (let [v# a] (if v# (my-and b c) v#))
+(macroexpand-1 '(my-> 5 (- 1) (* 2)))   ; => (user/my-> (- 5 1) (* 2))
+(my-> 5 (- 1) (* 2))                    ; => 8
 ```
 
-Each `macroexpand-1` peels one operand and leaves a smaller `my-and`
-call; the next step expands that, until the single- or zero-arg arity
-ends it — a flat nest of `let`/`if`, no recursion left at run time.
+Syntax-quote qualifies every symbol except special forms and `x#`
+names. One that resolves takes its var's namespace: `let` →
+`clojure.core/let`, `my->` → `user/my->` (`user` is whichever namespace
+defined the macro). One that does not takes the macro's own namespace,
+so a plain `tmp` becomes `user/tmp`, which `let` cannot bind — `Call to
+clojure.core/let did not conform to spec` — hence `v#` for a macro's
+locals; `(macroexpand-1 '(my-or a b))` shows it as a numbered
+`__auto__` symbol. Special forms such as `if` and `do` stay bare, which
+is why the `my-when` expansion above looked clean. Each
+`macroexpand-1` threads one form and leaves a smaller `my->` call; the
+next step expands that, until the one-argument arity ends it — a flat
+nest of calls, no recursion left at run time.
 
-**When to write one:** rarely. A function does not compose worse,
-`apply`s, and keeps clean stack traces. Write a macro only to control
+**`seq?` vs `list?`.** `list?` is true only of an actual list; `seq?`
+is true of a list *or* any other seq. Forms straight from the reader
+are lists; what syntax-quote, `map`, `filter` and `rest` build are seqs
+— `(list? (rest [1 2 3]))` is false, `(seq? (rest [1 2 3]))` is true.
+`(seq coll)` (no `?`) is different again: it returns `nil` for an empty
+collection, the idiomatic emptiness test from §1.
+
+**When to write one:** rarely. A function composes with other
+functions, can be passed around and `apply`ed, and keeps clean stack
+traces; a macro can do none of that. Write a macro only to control
 *evaluation* (do not evaluate this arg unless…) or *binding* (introduce
-a name visible in a body). Both kata macros are of exactly those kinds:
-`when-let*` controls evaluation and binding; `infix` rewrites a form
-and emits code rather than evaluating operands itself.
+a name visible in a body).
 
 > ## 🥋 Complete kata 16 ("macros") before continuing
 
@@ -1018,44 +1282,33 @@ and emits code rather than evaluating operands itself.
 
 ## 25. The capstone — a tiny interpreter
 
-Everything converges. A tree-walking interpreter for a small Lisp is
-the natural closer because every piece is something you have already
+Every piece of a tree-walking interpreter is one you have already
 built:
 
 - Source is already a Clojure data structure — no parser.
-- Self-evaluating values (numbers, strings, keywords, vectors, maps)
-  return themselves.
+- Self-evaluating values (numbers, strings, keywords, booleans, `nil`,
+  vectors, maps) return themselves.
 - Symbol lookup is a map lookup.
 - A composite form dispatches on its first element — the §20 dispatch
   pattern.
 - `if`, `let`, `do`, `def`, `fn` are each a few lines of recursive
   evaluation over an environment.
 
-The one piece of new wiring is node classification: `evaluate` decides
-what an expression *is* before it can act — the §12 predicates do this.
-A `symbol?` is an environment lookup; a non-`seq?` (number, string,
-keyword, vector, map) is self-evaluating; an empty form is itself;
-everything else is a composite to dispatch. The environment-as-atom
-needs the §12 atom test (`instance? clojure.lang.Atom`) to distinguish
-the mutable top-level env from the plain-map nested scopes, and a
-closure value is recognised with `instance?` on the record type you
-define. `zipmap` (§12) binds parameter names to argument values when
-you apply a closure.
+The atom of §21 has no `atom?`; test for one with the host check
+`(instance? clojure.lang.Atom x)` (§23). The other kinds of value have
+predicates of their own:
 
-Two definitions, stated up front because they are the crux, not hints.
-First: in `let`, each binding extends the environment the rest of the
-bindings *and* the body see; the extension is local to the `let` —
-shadowing does not leak out. Second: `def` must extend the environment
-beyond a single form, so model the top-level env as an atom (plain maps
-for nested `let`/`fn` scopes) that `def` can `swap!` into. A closure
-captures that env reference, so a function bound by `def` sees later
-`def`s — that is precisely how recursion through `def` works (kata 14's
-closure-over-state, applied).
+```clojure
+(keyword? :k)      (boolean? false)   ; => true
+(map? {:a 1})      (vector? [1 2])    ; => true
+```
 
-Beyond that classification step, the moving parts are ones you have
-already built — recursion over a tree, a dispatch table, a closure over
-state. The assembly is the work; lean on the earlier katas for each
-piece.
+A value that contains itself prints forever. A closure represented as
+a map or record that holds the atom env, stored in that same env, is
+one: at the REPL, wrap such a `def` as `(do (evaluate e '(def …))
+:ok)`, and expect a `StackOverflowError`, not a FAIL, when a test's
+actual value is such a closure. A host `fn` prints as an opaque object
+and has no such cycle.
 
 > ## 🥋 Complete kata 17 ("interpreter") before continuing
 
@@ -1069,12 +1322,14 @@ The dojo is self-contained; these are for after.
   core function on one page, grouped by what it operates on.
   **[clojuredocs.org](https://clojuredocs.org)** adds community
   examples per function.
-- **Joy of Clojure** (Fogus & Houser) or **Programming Clojure**
-  (Miller, Halloway & Bedra) for a book.
+- **[clojure.org/reference](https://clojure.org/reference)** and
+  **[clojure.org/guides](https://clojure.org/guides)** — the maintained
+  official docs. Transducers, spec and core.async are the main things
+  this dojo skipped; start there.
+- **Joy of Clojure** (Fogus & Houser, 2nd ed.) or **Programming
+  Clojure** (Miller, Halloway & Bedra, 3rd ed.) for a book; the
+  language is stable, so older editions hold.
 - Rich Hickey's talks — "Simple Made Easy", "The Value of Values",
   "Hammock Driven Development" — for *why* the language is shaped as it
   is.
 - **[4ever-clojure](https://4clojure.oxal.org/)** for more problems.
-
-It will feel slow for the first few weeks. That is normal; fluency
-comes before speed.

@@ -3,8 +3,7 @@
 ;; ─── Kata 6: Run-length encoding ───────────────────────────────────────
 ;;
 ;; Collapse maximal runs of equal adjacent elements into [count element]
-;; pairs, and invert that. `partition-by` gives you the runs directly;
-;; `mapcat` + `repeat` rebuilds. Design the pair so they round-trip.
+;; pairs, and invert that.
 ;;
 ;; ── encode ─────────────────────────────────────────────────────────────
 ;;
@@ -16,6 +15,7 @@
 ;;   (encode [1 1 1 2 2 1]) => [[3 1] [2 2] [1 1]]
 ;;   (encode "")           => []
 ;;   (encode [7])          => [[1 7]]
+;;   (encode [nil nil false]) => [[2 nil] [1 false]]
 ;;
 ;; ── decode ─────────────────────────────────────────────────────────────
 ;;

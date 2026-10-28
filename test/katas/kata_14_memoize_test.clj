@@ -17,6 +17,8 @@
     (is (= 16 (f 4)))
     (is (= 1 @calls))
     (is (= 25 (f 5)))
+    (is (= 2 @calls))
+    (is (= 16 (f 4)))
     (is (= 2 @calls))))
 
 (deftest supports-multiple-arities
@@ -52,9 +54,13 @@
   (testing "the cache is not lost under concurrent first-calls"
     (let [calls (atom 0)
           f (my-memoize (fn [x] (swap! calls inc) (* x 2)))
-          tasks (doall (for [_ (range 500)] (future (f 21))))]
-      (is (every? #{42} (map deref tasks)))
-      (is (= 42 (f 21))))))
+          tasks (doall (for [i (range 1000)] (future (f i))))]
+      (is (= [] (take 5 (remove #(= (* 2 %) @(nth tasks %)) (range 1000))))
+          "first five args whose call returned a wrong result")
+      (let [n @calls]
+        (run! f (range 1000))
+        (is (= n @calls)
+            "every key first computed concurrently stays cached")))))
 
 (deftest memoize-with-collapses-keys
   (let [calls (atom 0)
@@ -63,4 +69,19 @@
     (is (= "AB" (f "cd")))
     (testing "same key (count 2) → body ran only once" (is (= 1 @calls)))
     (is (= "XYZ" (f "xyz")))
+    (is (= 2 @calls))
+    (is (= "AB" (f "ef")))
     (is (= 2 @calls))))
+
+(deftest memoize-with-caches-falsey-results
+  (let [calls (atom 0)
+        f (memoize-with identity (fn [_] (swap! calls inc) nil))]
+    (is (nil? (f :x)))
+    (is (nil? (f :x)))
+    (is (= 1 @calls))))
+
+(deftest memoize-with-fns-have-distinct-caches
+  (let [a (memoize-with identity (constantly 1))
+        b (memoize-with identity (constantly 2))]
+    (is (= 1 (a :k)))
+    (is (= 2 (b :k)))))

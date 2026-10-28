@@ -20,6 +20,10 @@
   (is (= 3 (evaluate [6 2 '/])))
   (is (= 7/2 (evaluate [7 2 '/]))))
 
+(deftest non-long-operands
+  (is (= 2.5 (evaluate [1.5 1 '+])))
+  (is (= 5/6 (evaluate [1/2 1/3 '+]))))
+
 (deftest longer-expression
   ;; 15 7 1 1 + - / 3 *  ==  ((15 / (7 - (1+1))) * 3) = (15/5)*3 = 9
   (is (= 9 (evaluate [15 7 1 1 '+ '- '/ 3 '*]))))
@@ -27,7 +31,13 @@
 (deftest unknown-op
   (is (thrown-match? clojure.lang.ExceptionInfo
                      {:type :unknown-op, :op 'pow}
-                     (evaluate [2 3 'pow]))))
+                     (evaluate [2 3 'pow])))
+  (is (thrown-match? clojure.lang.ExceptionInfo
+                     {:type :unknown-op, :op 'pow}
+                     (evaluate ['pow])))
+  (is (thrown-match? clojure.lang.ExceptionInfo
+                     {:type :unknown-op, :op 'max}
+                     (evaluate [2 3 'max]))))
 
 (deftest stack-underflow
   (is (thrown-match? clojure.lang.ExceptionInfo

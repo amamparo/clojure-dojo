@@ -2,9 +2,7 @@
 
 ;; ─── Kata 4: Roster ────────────────────────────────────────────────────
 ;;
-;; Maps are the workhorse data structure. This kata is map surgery:
-;; building, reading, and transforming nested maps without ever mutating
-;; one. Every function returns a NEW value; the input is untouched.
+;; Every function returns a new roster; the input is untouched.
 ;;
 ;; A roster is a map of player-id → player. A player looks like:
 ;;

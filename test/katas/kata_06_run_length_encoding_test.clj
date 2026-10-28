@@ -11,7 +11,11 @@
   (is (= [] (encode "")))
   (is (= [] (encode [])))
   (is (= [[1 7]] (encode [7])))
-  (is (= [[1 \a] [1 \b] [1 \c]] (encode "abc"))))
+  (is (= [[1 \a] [1 \b] [1 \c]] (encode "abc")))
+  (is (= [[2 nil] [1 false] [1 nil]] (encode [nil nil false nil])))
+  (is (vector? (encode "aab")))
+  (is (= [true true] (mapv vector? (encode "aab"))))
+  (is (vector? (encode ""))))
 
 (deftest non-adjacent-equals-are-separate-runs
   (is (= [[1 1] [1 2] [1 1]] (encode [1 2 1]))))
@@ -24,11 +28,10 @@
 
 (deftest decode-returns-elements-not-a-string
   (testing "decoding char runs yields a seq of chars, never a string"
-    (is (= '(\x \x) (decode [[2 \x]])))
-    (is (not (string? (decode [[2 \x]]))))))
+    (is (= '(\x \x) (decode [[2 \x]])))))
 
 (deftest round-trip
   (doseq [xs ["" "a" "aaabbbcca" "abcabc" "zzzzzzzzzz" [1 1 1 2 2 1] [:a :a :b]
-              [7] (range 5)]]
+              [7] (range 5) [nil nil false false nil]]]
     (is (= (or (seq xs) '()) (decode (encode xs)))
-        (str "round-trip failed for " (pr-str xs)))))
+        (str "round-trip failed for " (vec xs)))))

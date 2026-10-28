@@ -35,4 +35,7 @@
 
 (deftest round-trip-full-range
   (testing "every integer 1..3999 survives ->roman then roman->"
-    (is (every? (fn [n] (= n (roman-> (->roman n)))) (range 1 4000)))))
+    (is (= []
+           (take 5
+                 (remove (fn [n] (= n (roman-> (->roman n)))) (range 1 4000))))
+        "first five integers that do not round-trip")))

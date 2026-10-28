@@ -8,11 +8,15 @@
 
 (deftest one-spare
   (testing "spare in frame 1: 10 + next roll (3), then 3 + 0"
-    (is (= 16 (score (into [5 5 3 0] (vec (repeat 16 0))))))))
+    (is (= 16 (score (into [5 5 3 0] (repeat 16 0)))))))
+
+(deftest gutter-then-ten-is-a-spare
+  (testing "frame 1 is 0 then 10, a spare: 10 + 5, then 5 + 3"
+    (is (= 23 (score (into [0 10 5 3] (repeat 16 0)))))))
 
 (deftest one-strike
   (testing "strike in frame 1: 10 + next two (3,4), then 3+4"
-    (is (= 24 (score (into [10 3 4] (vec (repeat 16 0))))))))
+    (is (= 24 (score (into [10 3 4] (repeat 16 0)))))))
 
 (deftest perfect-game (is (= 300 (score (vec (repeat 12 10))))))
 
@@ -27,6 +31,10 @@
 (deftest strike-in-tenth-frame
   (testing "18 zeros then 10 + two bonus rolls 7,2 = 19"
     (is (= 19 (score (into (vec (repeat 18 0)) [10 7 2]))))))
+
+(deftest strike-in-ninth-then-open-tenth
+  (testing "frame 9 strike: 10 + 3 + 4 = 17, frame 10 open: 3 + 4 = 7"
+    (is (= 24 (score (into (vec (repeat 16 0)) [10 3 4]))))))
 
 (deftest does-not-start-an-eleventh-frame
   (testing "bonus rolls after the 10th frame are bonus only"

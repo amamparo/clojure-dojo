@@ -19,9 +19,11 @@
   (is (= [2 3 5 7 11] (take 5 primes)))
   (is (= [2 3 5 7 11 13 17 19 23 29] (take 10 primes))))
 
-(deftest primes-is-lazy-and-infinite
-  (testing "forcing a deep prefix neither hangs nor overflows the stack"
-    (is (= 7919 (nth primes 999)))))
+(deftest primes-is-unbounded-and-stack-safe
+  (testing "deep elements: no finite bound, no stack-deep nesting"
+    (is (= 7919 (nth primes 999)))
+    (is (= 104729 (nth primes 9999)))
+    (is (= 1000003 (first (filter #(> % 1000000) primes))))))
 
 (deftest primes-take-while
   (is (= [2 3 5 7 11 13 17 19 23 29] (take-while #(< % 30) primes))))

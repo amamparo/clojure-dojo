@@ -1,6 +1,6 @@
 (ns katas.kata-13-bank-account-test
   (:require [clojure.test :refer [deftest is testing]]
-            [matcher-combinators.test :refer [match? thrown-match?]]
+            [matcher-combinators.test :refer [thrown-match?]]
             [katas.kata-13-bank-account :as bank]))
 
 (deftest opening-balance
@@ -16,7 +16,12 @@
 (deftest withdraw-and-balance
   (let [a (bank/open-account 100)]
     (is (= 60 (bank/withdraw! a 40)))
-    (is (= 60 (bank/balance a)))))
+    (is (= 60 (bank/balance a))))
+  (testing "withdrawing exactly the balance is allowed"
+    (let [a (bank/open-account 10)]
+      (is (= 0 (bank/withdraw! a 10)))
+      (is (= 0 (bank/balance a)))
+      (is (= 2 (count (bank/history a)))))))
 
 (deftest insufficient-funds
   (let [a (bank/open-account 10)]
@@ -40,9 +45,9 @@
   (let [a (bank/open-account 100)]
     (bank/deposit! a 20)
     (bank/withdraw! a 5)
-    (is (match? [{:op :open, :amount 100} {:op :deposit, :amount 20}
-                 {:op :withdraw, :amount 5}]
-                (bank/history a)))))
+    (is (= [{:op :open, :amount 100} {:op :deposit, :amount 20}
+            {:op :withdraw, :amount 5}]
+           (bank/history a)))))
 
 (deftest history-addressable-by-field
   (let [a (bank/open-account 100)]
@@ -82,7 +87,14 @@
           tasks (doall (for [_ (range 1000)] (future (bank/deposit! a 1))))]
       (run! deref tasks)
       (is (= 1000 (bank/balance a)))
-      (is (= 1001 (count (bank/history a)))))))
+      (is (= 1001 (count (bank/history a))))
+      (testing "each call returns the balance its own deposit produced"
+        (is (= [] (take 5 (remove (set (map deref tasks)) (range 1 1001))))
+            "first five balances that no call returned")))))
+
+;; The two concurrency tests catch the inherited deposit! bug. They cannot
+;; detect a withdraw! that lets concurrent calls overdraw the account; the
+;; stub's brief states that contract.
 
 (deftest concurrent-mixed
   (testing "deposits and withdrawals interleaved stay consistent"

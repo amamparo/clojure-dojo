@@ -14,18 +14,15 @@
       (record-game 3 7)))
 
 (deftest add-player-shape
-  (let [r (add-player {} 1 "Ann" :red)]
-    (is (= "Ann" (get-in r [1 :name])))
-    (is (= :red (get-in r [1 :team])))
-    (is (= 0 (get-in r [1 :stats :games])))
-    (is (= 0 (get-in r [1 :stats :points])))))
+  (is (= {1 {:name "Ann", :team :red, :stats {:games 0, :points 0}}}
+         (add-player {} 1 "Ann" :red))))
 
 (deftest add-player-replaces
   (let [r (-> {}
               (add-player 1 "Ann" :red)
+              (record-game 1 10)
               (add-player 1 "Ann2" :blue))]
-    (is (= "Ann2" (get-in r [1 :name])))
-    (is (= :blue (get-in r [1 :team])))))
+    (is (= {1 {:name "Ann2", :team :blue, :stats {:games 0, :points 0}}} r))))
 
 (deftest record-game-accumulates
   (let [r (sample)]
@@ -54,15 +51,20 @@
 (deftest leaderboard-orders-and-projects
   (is (= [{:name "Ann", :points 15} {:name "Cy", :points 7}
           {:name "Bo", :points 5}]
-         (leaderboard (sample)))))
+         (leaderboard (sample))))
+  (is (vector? (leaderboard (sample))))
+  (is (= [] (leaderboard {}))))
 
 (deftest leaderboard-tie-broken-by-name
   (let [r (-> {}
-              (add-player 1 "Zoe" :red)
+              (add-player 1 "Bo" :red)
               (add-player 2 "Amy" :red)
+              (add-player 3 "Cy" :red)
               (record-game 1 5)
-              (record-game 2 5))]
-    (is (= [{:name "Amy", :points 5} {:name "Zoe", :points 5}]
+              (record-game 2 5)
+              (record-game 3 5))]
+    (is (= [{:name "Amy", :points 5} {:name "Bo", :points 5}
+            {:name "Cy", :points 5}]
            (leaderboard r)))))
 
 (deftest leaderboard-keys-are-exactly-name-and-points
